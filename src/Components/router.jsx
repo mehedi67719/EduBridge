@@ -3,6 +3,7 @@ import Root from "./Root";
 import Home from "../Pages/Commanpages/Home";
 import { createBrowserRouter } from "react-router";
 import Notice from "../Pages/Commanpages/Notice";
+import Routine from "../Pages/Commanpages/Routine";
 
 
 export const router = createBrowserRouter([
@@ -17,6 +18,10 @@ export const router = createBrowserRouter([
       {
         path:"/notice",
         Component:Notice
+      },
+      {
+        path:"/routine",
+        Component:Routine
       }
     ],
   },
