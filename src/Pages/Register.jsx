@@ -10,8 +10,6 @@ import {
   CheckCircle,
   AlertCircle,
   Phone,
-  MapPin,
-  Calendar,
   BookOpen,
   UserCheck,
   Sparkles,
