@@ -4,6 +4,7 @@ import Home from "../Pages/Commanpages/Home";
 import { createBrowserRouter } from "react-router";
 import Notice from "../Pages/Commanpages/Notice";
 import Routine from "../Pages/Commanpages/Routine";
+import Assignment from "../Pages/Commanpages/Assignment";
 
 
 export const router = createBrowserRouter([
@@ -22,6 +23,10 @@ export const router = createBrowserRouter([
       {
         path:"/routine",
         Component:Routine
+      },
+      {
+        path:'/assignment',
+        Component:Assignment
       }
     ],
   },
