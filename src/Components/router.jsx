@@ -2,6 +2,7 @@
 import Root from "./Root";
 import Home from "../Pages/Commanpages/Home";
 import { createBrowserRouter } from "react-router";
+import Notice from "../Pages/Commanpages/Notice";
 
 
 export const router = createBrowserRouter([
@@ -13,6 +14,10 @@ export const router = createBrowserRouter([
         index: true,
         Component: Home,
       },
+      {
+        path:"/notice",
+        Component:Notice
+      }
     ],
   },
 ]);

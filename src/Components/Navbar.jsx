@@ -12,6 +12,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import { Link } from 'react-router';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -33,13 +34,13 @@ const Navbar = () => {
       <div className="container">
         <div className="flex justify-between items-center h-16">
           
-          <div className="flex-shrink-0">
+          <Link to='/' className="flex-shrink-0">
             <h1 className="text-2xl font-bold">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">Edu</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Bridge</span>
             </h1>
             <p className="text-[10px] text-purple-300/70 hidden sm:block tracking-wider">Smart Campus Management</p>
-          </div>
+          </Link>
 
           <div className="hidden md:flex space-x-1 lg:space-x-2">
             {navLinks.map((link) => (
