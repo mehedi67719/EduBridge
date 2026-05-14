@@ -30,7 +30,7 @@ const Navbar = () => {
 
   return (
     <div className="w-full bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 shadow-xl sticky top-0 z-50 border-b border-purple-500/20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container">
         <div className="flex justify-between items-center h-16">
           
           <div className="flex-shrink-0">
