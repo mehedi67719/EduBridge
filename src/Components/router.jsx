@@ -5,6 +5,7 @@ import { createBrowserRouter } from "react-router";
 import Notice from "../Pages/Commanpages/Notice";
 import Routine from "../Pages/Commanpages/Routine";
 import Assignment from "../Pages/Commanpages/Assignment";
+import Attendance from "../Pages/Commanpages/Attendance";
 
 
 export const router = createBrowserRouter([
@@ -27,6 +28,10 @@ export const router = createBrowserRouter([
       {
         path:'/assignment',
         Component:Assignment
+      },
+      {
+        path:'/attendance',
+        Component:Attendance
       }
     ],
   },
