@@ -13,7 +13,9 @@ import {
   BookOpen,
   UserCheck,
   Sparkles,
- 
+  Key,
+  Shield,
+  Building2
 } from 'lucide-react';
 import { FaFacebook, FaGithub, FaTwitter } from 'react-icons/fa6';
 
@@ -21,6 +23,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [userType, setUserType] = useState('student');
+  const [secretCode, setSecretCode] = useState('');
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -28,12 +31,14 @@ const Register = () => {
     password: '',
     confirmPassword: '',
     department: '',
-    semester: '',
-    studentId: ''
+    studentId: '',
+    institutionName: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+
 
   const handleChange = (e) => {
     setFormData({
@@ -48,36 +53,93 @@ const Register = () => {
     setSuccess('');
     
     if (!formData.fullName || !formData.email || !formData.password) {
+      alert('Please fill in all required fields');
       setError('Please fill in all required fields');
       return;
     }
     
     if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match');
       setError('Passwords do not match');
       return;
     }
     
     if (formData.password.length < 6) {
+      alert('Password must be at least 6 characters');
       setError('Password must be at least 6 characters');
       return;
+    }
+
+    if (!formData.institutionName) {
+      alert('Please provide institution information');
+      setError('Please provide institution information');
+      return;
+    }
+
+    if (userType === 'principal') {
+      if (!secretCode) {
+        alert('Secret code is required for Principal registration');
+        setError('Secret code is required for Principal registration');
+        return;
+      }
+ 
+    }
+
+    if (userType !== 'principal') {
+      if (!secretCode) {
+        alert('Secret code is required for registration');
+        setError('Secret code is required for registration');
+        return;
+      }
+  
     }
     
     setIsLoading(true);
     
+    // Prepare all data for console logging
+    const registrationData = {
+      userType: userType,
+      fullName: formData.fullName,
+      email: formData.email,
+      phone: formData.phone,
+      department: formData.department,
+      studentId: formData.studentId,
+      institutionName: formData.institutionName,
+      secretCode: secretCode,
+      password: formData.password,
+      confirmPassword: formData.confirmPassword
+    };
+    
+    // Log all input data to console
+    console.log('=== Registration Form Submission ===');
+    console.log('User Type:', userType);
+    console.log('Full Name:', formData.fullName);
+    console.log('Email:', formData.email);
+    console.log('Phone:', formData.phone);
+    console.log('Department:', formData.department);
+    console.log('Student ID:', formData.studentId);
+    console.log('Institution Name:', formData.institutionName);
+    console.log('Secret Code:', secretCode);
+    console.log('Password:', formData.password);
+    console.log('Confirm Password:', formData.confirmPassword);
+    console.log('Complete Registration Data:', registrationData);
+    console.log('=== End of Registration Data ===');
+    
     setTimeout(() => {
-      console.log('Registration attempt:', { userType, ...formData });
-      setSuccess('Registration successful! Please check your email for verification.');
+      console.log('Registration Data (from setTimeout):', registrationData);
+      alert(`Registration successful as ${userType}!`);
+      setSuccess(`Registration successful as ${userType}! Please check your email for verification.`);
       setIsLoading(false);
     }, 1500);
   };
 
   const userTypes = [
-    { id: 'principal', label: 'Principal', icon: GraduationCap, color: 'from-amber-500 to-orange-500' },
-    { id: 'chip_instructor', label: 'Chip Instructor', icon: UserCheck, color: 'from-red-500 to-rose-500' },
-    { id: 'instructor', label: 'Instructor', icon: User, color: 'from-blue-500 to-indigo-500' },
-    { id: 'junior_instructor', label: 'Junior Instructor', icon: User, color: 'from-cyan-500 to-teal-500' },
-    { id: 'craft_instructor', label: 'Craft Instructor', icon: User, color: 'from-emerald-500 to-green-500' },
-    { id: 'student', label: 'Student', icon: BookOpen, color: 'from-purple-500 to-pink-500' }
+    { id: 'principal', label: 'Principal', icon: GraduationCap, color: 'from-amber-500 to-orange-500', requiresSecret: true, requiresInstitution: true },
+    { id: 'chip_instructor', label: 'Chip Instructor', icon: UserCheck, color: 'from-red-500 to-rose-500', requiresSecret: true, requiresInstitution: false },
+    { id: 'instructor', label: 'Instructor', icon: User, color: 'from-blue-500 to-indigo-500', requiresSecret: true, requiresInstitution: false },
+    { id: 'junior_instructor', label: 'Junior Instructor', icon: User, color: 'from-cyan-500 to-teal-500', requiresSecret: true, requiresInstitution: false },
+    { id: 'craft_instructor', label: 'Craft Instructor', icon: User, color: 'from-emerald-500 to-green-500', requiresSecret: true, requiresInstitution: false },
+    { id: 'student', label: 'Student', icon: BookOpen, color: 'from-purple-500 to-pink-500', requiresSecret: true, requiresInstitution: false }
   ];
 
   const departments = [
@@ -89,7 +151,21 @@ const Register = () => {
     'English'
   ];
 
-  const semesters = ['1st Semester', '2nd Semester', '3rd Semester', '4th Semester', '5th Semester', '6th Semester', '7th Semester', '8th Semester'];
+  const institutions = [
+    'Dhaka University of Engineering & Technology (DUET)',
+    'Bangladesh University of Engineering and Technology (BUET)',
+    'Rajshahi University of Engineering & Technology (RUET)',
+    'Chittagong University of Engineering & Technology (CUET)',
+    'Khulna University of Engineering & Technology (KUET)',
+    'Mymensingh Engineering College',
+    'Barishal Engineering College',
+    'Rangpur Engineering College',
+    'Dhaka Polytechnic Institute',
+    'Chittagong Polytechnic Institute',
+    'Rajshahi Polytechnic Institute',
+    'Khulna Polytechnic Institute',
+    'Other Institution'
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100">
@@ -171,7 +247,12 @@ const Register = () => {
                   {userTypes.map((type) => (
                     <button
                       key={type.id}
-                      onClick={() => setUserType(type.id)}
+                      onClick={() => {
+                        setUserType(type.id);
+                        setSecretCode('');
+                        setError('');
+                        setFormData(prev => ({ ...prev, institutionName: '' }));
+                      }}
                       className={`flex-1 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                         userType === type.id
                           ? `bg-gradient-to-r ${type.color} text-white shadow-md`
@@ -218,6 +299,47 @@ const Register = () => {
                         className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300"
                       />
                     </div>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    {userType === 'principal' ? (
+                      <>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Enter Your Institution Name <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <input
+                            type="text"
+                            name="institutionName"
+                            value={formData.institutionName}
+                            onChange={handleChange}
+                            placeholder="Enter your institution name"
+                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Select Your Institution <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <select
+                            name="institutionName"
+                            value={formData.institutionName}
+                            onChange={handleChange}
+                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300 bg-white"
+                          >
+                            <option value="">Select your institution</option>
+                            {institutions.map((inst) => (
+                              <option key={inst} value={inst}>{inst}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   <div>
@@ -289,23 +411,6 @@ const Register = () => {
                           ))}
                         </select>
                       </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Semester
-                        </label>
-                        <select
-                          name="semester"
-                          value={formData.semester}
-                          onChange={handleChange}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300 bg-white"
-                        >
-                          <option value="">Select Semester</option>
-                          {semesters.map((sem) => (
-                            <option key={sem} value={sem}>{sem}</option>
-                          ))}
-                        </select>
-                      </div>
                     </>
                   )}
 
@@ -327,6 +432,31 @@ const Register = () => {
                       </select>
                     </div>
                   )}
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Secret Code <span className="text-red-500">*</span>
+                      {userType === 'principal' && (
+                        <span className="text-xs text-gray-500 ml-2">(Principal access code required)</span>
+                      )}
+                    </label>
+                    <div className="relative">
+                      <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="password"
+                        name="secretCode"
+                        value={secretCode}
+                        onChange={(e) => setSecretCode(e.target.value)}
+                        placeholder={userType === 'principal' ? "Enter principal secret code" : "Enter registration secret code"}
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {userType === 'principal' 
+                        ? "Enter your principal access code" 
+                        : "Contact your institution administrator for the registration code"}
+                    </p>
+                  </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -413,6 +543,9 @@ const Register = () => {
                 </button>
 
                 <div className="mt-6 pt-6 border-t border-gray-200">
+                  <p className="text-xs text-center text-gray-500 mb-4">
+                    * Secret code is required for all registrations
+                  </p>
                   <div className="flex items-center justify-center gap-4">
                     <button className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
                       <FaFacebook className="w-5 h-5 text-gray-600" />
@@ -430,7 +563,6 @@ const Register = () => {
           </div>
         </div>
 
-   
       </div>
     </div>
   );
