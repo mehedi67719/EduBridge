@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import {
   User,
   Mail,
@@ -14,132 +15,91 @@ import {
   UserCheck,
   Sparkles,
   Key,
-  Shield,
   Building2
 } from 'lucide-react';
 import { FaFacebook, FaGithub, FaTwitter } from 'react-icons/fa6';
+import { useForm } from 'react-hook-form';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [userType, setUserType] = useState('student');
-  const [secretCode, setSecretCode] = useState('');
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
-    department: '',
-    studentId: '',
-    institutionName: ''
-  });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [serverError, setServerError] = useState('');
+  const [serverSuccess, setServerSuccess] = useState('');
 
-
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    
-    if (!formData.fullName || !formData.email || !formData.password) {
-      alert('Please fill in all required fields');
-      setError('Please fill in all required fields');
-      return;
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+    setValue,
+    reset
+  } = useForm({
+    defaultValues: {
+      fullName: '',
+      email: '',
+      phone: '',
+      password: '',
+      confirmPassword: '',
+      department: '',
+      studentId: '',
+      institutionName: '',
+      secretCode: '',
+      terms: false
     }
-    
-    if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
-      setError('Passwords do not match');
-      return;
-    }
-    
-    if (formData.password.length < 6) {
-      alert('Password must be at least 6 characters');
-      setError('Password must be at least 6 characters');
-      return;
-    }
+  });
 
-    if (!formData.institutionName) {
-      alert('Please provide institution information');
-      setError('Please provide institution information');
-      return;
-    }
+  const password = watch('password');
+  const selectedUserType = watch('userType');
 
-    if (userType === 'principal') {
-      if (!secretCode) {
-        alert('Secret code is required for Principal registration');
-        setError('Secret code is required for Principal registration');
-        return;
-      }
- 
-    }
-
-    if (userType !== 'principal') {
-      if (!secretCode) {
-        alert('Secret code is required for registration');
-        setError('Secret code is required for registration');
-        return;
-      }
-  
-    }
-    
+  const onSubmit = async (data) => {
+    setServerError('');
+    setServerSuccess('');
     setIsLoading(true);
-    
-    // Prepare all data for console logging
+
     const registrationData = {
       userType: userType,
-      fullName: formData.fullName,
-      email: formData.email,
-      phone: formData.phone,
-      department: formData.department,
-      studentId: formData.studentId,
-      institutionName: formData.institutionName,
-      secretCode: secretCode,
-      password: formData.password,
-      confirmPassword: formData.confirmPassword
+      fullName: data.fullName,
+      email: data.email,
+      phone: data.phone,
+      department: data.department,
+      studentId: data.studentId,
+      institutionName: data.institutionName,
+      secretCode: data.secretCode,
+      password: data.password,
+      confirmPassword: data.confirmPassword
     };
-    
-    // Log all input data to console
+
     console.log('=== Registration Form Submission ===');
     console.log('User Type:', userType);
-    console.log('Full Name:', formData.fullName);
-    console.log('Email:', formData.email);
-    console.log('Phone:', formData.phone);
-    console.log('Department:', formData.department);
-    console.log('Student ID:', formData.studentId);
-    console.log('Institution Name:', formData.institutionName);
-    console.log('Secret Code:', secretCode);
-    console.log('Password:', formData.password);
-    console.log('Confirm Password:', formData.confirmPassword);
+    console.log('Full Name:', data.fullName);
+    console.log('Email:', data.email);
+    console.log('Phone:', data.phone);
+    console.log('Department:', data.department);
+    console.log('Student ID:', data.studentId);
+    console.log('Institution Name:', data.institutionName);
+    console.log('Secret Code:', data.secretCode);
+    console.log('Password:', data.password);
+    console.log('Confirm Password:', data.confirmPassword);
     console.log('Complete Registration Data:', registrationData);
     console.log('=== End of Registration Data ===');
-    
+
     setTimeout(() => {
-      console.log('Registration Data (from setTimeout):', registrationData);
-      alert(`Registration successful as ${userType}!`);
-      setSuccess(`Registration successful as ${userType}! Please check your email for verification.`);
+      setServerSuccess(`Registration successful as ${userType}! Please check your email for verification.`);
       setIsLoading(false);
+      reset();
+      setValue('secretCode', '');
     }, 1500);
   };
 
   const userTypes = [
-    { id: 'principal', label: 'Principal', icon: GraduationCap, color: 'from-amber-500 to-orange-500', requiresSecret: true, requiresInstitution: true },
-    { id: 'chip_instructor', label: 'Chip Instructor', icon: UserCheck, color: 'from-red-500 to-rose-500', requiresSecret: true, requiresInstitution: false },
-    { id: 'instructor', label: 'Instructor', icon: User, color: 'from-blue-500 to-indigo-500', requiresSecret: true, requiresInstitution: false },
-    { id: 'junior_instructor', label: 'Junior Instructor', icon: User, color: 'from-cyan-500 to-teal-500', requiresSecret: true, requiresInstitution: false },
-    { id: 'craft_instructor', label: 'Craft Instructor', icon: User, color: 'from-emerald-500 to-green-500', requiresSecret: true, requiresInstitution: false },
-    { id: 'student', label: 'Student', icon: BookOpen, color: 'from-purple-500 to-pink-500', requiresSecret: true, requiresInstitution: false }
+    { id: 'principal', label: 'Principal', icon: GraduationCap, color: 'from-amber-500 to-orange-500' },
+    { id: 'chip_instructor', label: 'Chip Instructor', icon: UserCheck, color: 'from-red-500 to-rose-500' },
+    { id: 'instructor', label: 'Instructor', icon: User, color: 'from-blue-500 to-indigo-500' },
+    { id: 'junior_instructor', label: 'Junior Instructor', icon: User, color: 'from-cyan-500 to-teal-500' },
+    { id: 'craft_instructor', label: 'Craft Instructor', icon: User, color: 'from-emerald-500 to-green-500' },
+    { id: 'student', label: 'Student', icon: BookOpen, color: 'from-purple-500 to-pink-500' }
   ];
 
   const departments = [
@@ -169,9 +129,7 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100">
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 mb-4 shadow-sm">
             <GraduationCap className="w-4 h-4 text-indigo-500" />
@@ -188,7 +146,6 @@ const Register = () => {
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
           <div className="flex flex-col lg:flex-row">
-            
             <div className="lg:w-2/5 bg-gradient-to-br from-indigo-600 to-purple-700 p-8 lg:p-10 text-white">
               <div className="h-full flex flex-col justify-between">
                 <div>
@@ -239,19 +196,18 @@ const Register = () => {
               </div>
             </div>
 
-            
             <div className="lg:w-3/5 p-6 sm:p-8 lg:p-10">
-              
               <div className="mb-6">
                 <div className="flex flex-wrap gap-2">
                   {userTypes.map((type) => (
                     <button
                       key={type.id}
+                      type="button"
                       onClick={() => {
                         setUserType(type.id);
-                        setSecretCode('');
-                        setError('');
-                        setFormData(prev => ({ ...prev, institutionName: '' }));
+                        setValue('institutionName', '');
+                        setValue('secretCode', '');
+                        setServerError('');
                       }}
                       className={`flex-1 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                         userType === type.id
@@ -268,21 +224,21 @@ const Register = () => {
                 </div>
               </div>
 
-              {success && (
+              {serverSuccess && (
                 <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  <span className="text-sm text-emerald-600">{success}</span>
+                  <span className="text-sm text-emerald-600">{serverSuccess}</span>
                 </div>
               )}
 
-              {error && (
+              {serverError && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-red-500" />
-                  <span className="text-sm text-red-600">{error}</span>
+                  <span className="text-sm text-red-600">{serverError}</span>
                 </div>
               )}
 
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -292,13 +248,16 @@ const Register = () => {
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input
                         type="text"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleChange}
+                        {...register('fullName', { required: 'Full name is required' })}
                         placeholder="Enter your full name"
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300"
+                        className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
+                          errors.fullName ? 'border-red-500' : 'border-gray-200'
+                        } focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300`}
                       />
                     </div>
+                    {errors.fullName && (
+                      <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>
+                    )}
                   </div>
 
                   <div className="md:col-span-2">
@@ -311,13 +270,16 @@ const Register = () => {
                           <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <input
                             type="text"
-                            name="institutionName"
-                            value={formData.institutionName}
-                            onChange={handleChange}
+                            {...register('institutionName', { required: 'Institution name is required' })}
                             placeholder="Enter your institution name"
-                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300"
+                            className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
+                              errors.institutionName ? 'border-red-500' : 'border-gray-200'
+                            } focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300`}
                           />
                         </div>
+                        {errors.institutionName && (
+                          <p className="text-red-500 text-xs mt-1">{errors.institutionName.message}</p>
+                        )}
                       </>
                     ) : (
                       <>
@@ -327,10 +289,10 @@ const Register = () => {
                         <div className="relative">
                           <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <select
-                            name="institutionName"
-                            value={formData.institutionName}
-                            onChange={handleChange}
-                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300 bg-white"
+                            {...register('institutionName', { required: 'Please select an institution' })}
+                            className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
+                              errors.institutionName ? 'border-red-500' : 'border-gray-200'
+                            } focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300 bg-white`}
                           >
                             <option value="">Select your institution</option>
                             {institutions.map((inst) => (
@@ -338,6 +300,9 @@ const Register = () => {
                             ))}
                           </select>
                         </div>
+                        {errors.institutionName && (
+                          <p className="text-red-500 text-xs mt-1">{errors.institutionName.message}</p>
+                        )}
                       </>
                     )}
                   </div>
@@ -350,13 +315,22 @@ const Register = () => {
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input
                         type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
+                        {...register('email', { 
+                          required: 'Email is required',
+                          pattern: {
+                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                            message: 'Invalid email address'
+                          }
+                        })}
                         placeholder="Enter your email"
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300"
+                        className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
+                          errors.email ? 'border-red-500' : 'border-gray-200'
+                        } focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300`}
                       />
                     </div>
+                    {errors.email && (
+                      <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                    )}
                   </div>
 
                   <div>
@@ -367,9 +341,7 @@ const Register = () => {
                       <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input
                         type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
+                        {...register('phone')}
                         placeholder="Enter your phone number"
                         className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300"
                       />
@@ -386,9 +358,7 @@ const Register = () => {
                           <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <input
                             type="text"
-                            name="studentId"
-                            value={formData.studentId}
-                            onChange={handleChange}
+                            {...register('studentId')}
                             placeholder="Enter your student ID"
                             className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300"
                           />
@@ -400,9 +370,7 @@ const Register = () => {
                           Department
                         </label>
                         <select
-                          name="department"
-                          value={formData.department}
-                          onChange={handleChange}
+                          {...register('department')}
                           className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300 bg-white"
                         >
                           <option value="">Select Department</option>
@@ -420,9 +388,7 @@ const Register = () => {
                         Department
                       </label>
                       <select
-                        name="department"
-                        value={formData.department}
-                        onChange={handleChange}
+                        {...register('department')}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300 bg-white"
                       >
                         <option value="">Select Department</option>
@@ -444,13 +410,16 @@ const Register = () => {
                       <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input
                         type="password"
-                        name="secretCode"
-                        value={secretCode}
-                        onChange={(e) => setSecretCode(e.target.value)}
+                        {...register('secretCode', { required: 'Secret code is required' })}
                         placeholder={userType === 'principal' ? "Enter principal secret code" : "Enter registration secret code"}
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300"
+                        className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
+                          errors.secretCode ? 'border-red-500' : 'border-gray-200'
+                        } focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300`}
                       />
                     </div>
+                    {errors.secretCode && (
+                      <p className="text-red-500 text-xs mt-1">{errors.secretCode.message}</p>
+                    )}
                     <p className="text-xs text-gray-500 mt-1">
                       {userType === 'principal' 
                         ? "Enter your principal access code" 
@@ -466,11 +435,17 @@ const Register = () => {
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input
                         type={showPassword ? 'text' : 'password'}
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
+                        {...register('password', { 
+                          required: 'Password is required',
+                          minLength: {
+                            value: 6,
+                            message: 'Password must be at least 6 characters'
+                          }
+                        })}
                         placeholder="Create a password"
-                        className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300"
+                        className={`w-full pl-10 pr-12 py-3 rounded-xl border ${
+                          errors.password ? 'border-red-500' : 'border-gray-200'
+                        } focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300`}
                       />
                       <button
                         type="button"
@@ -484,6 +459,9 @@ const Register = () => {
                         )}
                       </button>
                     </div>
+                    {errors.password && (
+                      <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+                    )}
                   </div>
 
                   <div>
@@ -494,11 +472,14 @@ const Register = () => {
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input
                         type={showConfirmPassword ? 'text' : 'password'}
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleChange}
+                        {...register('confirmPassword', { 
+                          required: 'Please confirm your password',
+                          validate: value => value === password || 'Passwords do not match'
+                        })}
                         placeholder="Confirm your password"
-                        className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300"
+                        className={`w-full pl-10 pr-12 py-3 rounded-xl border ${
+                          errors.confirmPassword ? 'border-red-500' : 'border-gray-200'
+                        } focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300`}
                       />
                       <button
                         type="button"
@@ -512,6 +493,9 @@ const Register = () => {
                         )}
                       </button>
                     </div>
+                    {errors.confirmPassword && (
+                      <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>
+                    )}
                   </div>
                 </div>
 
@@ -519,13 +503,16 @@ const Register = () => {
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      required
+                      {...register('terms', { required: 'You must agree to the terms' })}
                       className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                     />
                     <span className="text-sm text-gray-600">
                       I agree to the <a href="#" className="text-indigo-600 hover:underline">Terms of Service</a> and <a href="#" className="text-indigo-600 hover:underline">Privacy Policy</a>
                     </span>
                   </label>
+                  {errors.terms && (
+                    <p className="text-red-500 text-xs mt-1">{errors.terms.message}</p>
+                  )}
                 </div>
 
                 <button
@@ -547,13 +534,13 @@ const Register = () => {
                     * Secret code is required for all registrations
                   </p>
                   <div className="flex items-center justify-center gap-4">
-                    <button className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+                    <button type="button" className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
                       <FaFacebook className="w-5 h-5 text-gray-600" />
                     </button>
-                    <button className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+                    <button type="button" className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
                       <FaTwitter className="w-5 h-5 text-gray-600" />
                     </button>
-                    <button className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+                    <button type="button" className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
                       <FaGithub className="w-5 h-5 text-gray-600" />
                     </button>
                   </div>
@@ -562,7 +549,6 @@ const Register = () => {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
