@@ -1,11 +1,11 @@
 import axios from "axios";
-import useAuth from "./useAuth";
 import { useContext, useEffect } from "react";
 import { Loadingcontext } from "./Loading/LoadingContext";
+import Useauth from "./Useauth";
 
 
 const useAxios = () => {
-  const { token } = useAuth();
+  const { token } = Useauth();
   const { setLoading } = useContext(Loadingcontext);
 
   const axiosInstance = axios.create({

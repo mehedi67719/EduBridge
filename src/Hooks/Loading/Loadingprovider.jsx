@@ -1,13 +1,15 @@
-import  { useState } from 'react';
-import { Loadingcontext } from './LoadingContext';
+import { useState } from "react";
+import { Loadingcontext } from "./LoadingContext";
 
-const Loadingprovider = ({children}) => {
-    const [loading,setLoading]=useState(false);
-    return (
-        <Loadingcontext value={loading,setLoading}>
-            {children}
-        </Loadingcontext>
-    );
+
+const LoadingProvider = ({ children }) => {
+  const [loading, setLoading] = useState(false);
+
+  return (
+    <Loadingcontext.Provider value={{ loading, setLoading }}>
+      {children}
+    </Loadingcontext.Provider>
+  );
 };
 
-export default Loadingprovider;
+export default LoadingProvider;
