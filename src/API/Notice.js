@@ -1,16 +1,11 @@
-import useAxios from "../Hooks/Useaxios";
+import { axiosSecure } from "../Hooks/Axiosinstance";
 
-export const useLoadNotice = () => {
-  const axiosSecure = useAxios();
 
-  const loadnotice = async () => {
-    try {
-      const res = await axiosSecure.get("/notice");
-      return res.data;
-    } catch (error) {
-      console.log("something wrong", error);
-    }
-  };
-
-  return { loadnotice };
+export const loadNotice = async () => {
+  try {
+    const res = await axiosSecure.get("/notice");
+    return res.data;
+  } catch (error) {
+    console.log("something wrong", error);
+  }
 };

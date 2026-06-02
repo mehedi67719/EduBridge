@@ -17,160 +17,64 @@ import {
   Bookmark,
   TrendingUp,
 } from "lucide-react";
-import { useLoadNotice } from "../../API/Notice";
 import { Loadingcontext } from "../../Hooks/Loading/LoadingContext";
 import Useloading from "../../Hooks/Useloading";
-
+import { loadNotice } from "../../API/Notice";
 
 const Notice = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [noticesData, setNoticesData] = useState([]);
-  const {loading}=Useloading(Loadingcontext)
-  const { loadnotice } = useLoadNotice();
-  
+  const { loading, setLoading } = Useloading(Loadingcontext);
+
 
   useEffect(() => {
     const getData = async () => {
-      const data = await loadnotice();
-      setNoticesData(data);
+      setLoading(true);
+      try {
+        const data = await loadNotice();
+        if (data && Array.isArray(data)) {
+          setNoticesData(data);
+        } else {
+          setNoticesData([]);
+        }
+      } catch (error) {
+        console.error("Error loading notices:", error);
+        setNoticesData([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
     getData();
   }, []);
 
-  if(loading){
-    return <p>loading ...</p>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading notices...</p>
+        </div>
+      </div>
+    );
   }
 
-
-  console.log(noticesData)
-
-  const notices = [
-    {
-      id: 1,
-      title: "Annual Examination 2024 Schedule",
-      description:
-        "The annual examination will start from December 15, 2024. All students must collect their admit cards by December 10.",
-      date: "November 25, 2024",
-      category: "exam",
-      priority: "high",
-      author: "Principal Office",
-      pinned: true,
-      views: "1.2k",
-      trending: true,
-    },
-    {
-      id: 2,
-      title: "Campus Closed for Eid-ul-Fitr",
-      description:
-        "The campus will remain closed from April 8 to April 15 on the occasion of Eid-ul-Fitr.",
-      date: "March 20, 2024",
-      category: "holiday",
-      priority: "medium",
-      author: "Administration",
-      pinned: false,
-      views: "856",
-      trending: false,
-    },
-    {
-      id: 3,
-      title: "Workshop on Web Development",
-      description:
-        "A 3-day workshop on MERN Stack will be held from December 1-3. Register by November 25.",
-      date: "November 15, 2024",
-      category: "event",
-      priority: "medium",
-      author: "Chip Instructor",
-      pinned: false,
-      views: "2.1k",
-      trending: true,
-    },
-    {
-      id: 4,
-      title: "Result Published - Mid Term 2024",
-      description:
-        "Mid term examination results have been published. Check your results in the student portal.",
-      date: "October 30, 2024",
-      category: "result",
-      priority: "high",
-      author: "Examination Department",
-      pinned: true,
-      views: "3.4k",
-      trending: true,
-    },
-    {
-      id: 5,
-      title: "Parent-Teacher Meeting",
-      description:
-        "PTM for all semesters will be held on December 5 from 10 AM to 3 PM.",
-      date: "November 28, 2024",
-      category: "meeting",
-      priority: "medium",
-      author: "Academic Department",
-      pinned: false,
-      views: "567",
-      trending: false,
-    },
-    {
-      id: 6,
-      title: "Sports Day 2024",
-      description:
-        "Annual Sports Day will be celebrated on December 20. All students are encouraged to participate.",
-      date: "December 1, 2024",
-      category: "event",
-      priority: "low",
-      author: "Sports Committee",
-      pinned: false,
-      views: "934",
-      trending: false,
-    },
-  ];
+  const notices = noticesData.length > 0 ? noticesData : [];
 
   const categories = [
-    {
-      id: "all",
-      name: "All Notices",
-      icon: Bell,
-      count: 6,
-      color: "from-cyan-500 to-blue-500",
-    },
-    {
-      id: "exam",
-      name: "Examination",
-      icon: Calendar,
-      count: 1,
-      color: "from-purple-500 to-pink-500",
-    },
-    {
-      id: "event",
-      name: "Events",
-      icon: Megaphone,
-      count: 2,
-      color: "from-orange-500 to-red-500",
-    },
-    {
-      id: "holiday",
-      name: "Holidays",
-      icon: Clock,
-      count: 1,
-      color: "from-emerald-500 to-teal-500",
-    },
-    {
-      id: "result",
-      name: "Results",
-      icon: TrendingUp,
-      count: 1,
-      color: "from-blue-500 to-indigo-500",
-    },
-    {
-      id: "meeting",
-      name: "Meetings",
-      icon: User,
-      count: 1,
-      color: "from-rose-500 to-pink-500",
-    },
+    { id: "all", name: "All Notices", icon: Bell, color: "from-cyan-500 to-blue-500" },
+    { id: "exam", name: "Examination", icon: Calendar, color: "from-purple-500 to-pink-500" },
+    { id: "event", name: "Events", icon: Megaphone, color: "from-orange-500 to-red-500" },
+    { id: "holiday", name: "Holidays", icon: Clock, color: "from-emerald-500 to-teal-500" },
+    { id: "result", name: "Results", icon: TrendingUp, color: "from-blue-500 to-indigo-500" },
+    { id: "meeting", name: "Meetings", icon: User, color: "from-rose-500 to-pink-500" },
   ];
+
+  const getCategoryCount = (categoryId) => {
+    if (categoryId === "all") return notices.length;
+    return notices.filter(notice => notice.category === categoryId).length;
+  };
 
   const getPriorityStyle = (priority) => {
     switch (priority) {
@@ -202,16 +106,25 @@ const Notice = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "Date not specified";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   const filteredNotices = notices.filter((notice) => {
-    const matchesCategory =
-      selectedCategory === "all" || notice.category === selectedCategory;
+    const matchesCategory = selectedCategory === "all" || notice.category === selectedCategory;
     const matchesSearch =
-      notice.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      notice.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (notice.title && notice.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (notice.description && notice.description.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
-  const pinnedNotices = filteredNotices.filter((notice) => notice.pinned);
+  const pinnedNotices = filteredNotices.filter((notice) => notice.pinned === true);
   const normalNotices = filteredNotices.filter((notice) => !notice.pinned);
 
   return (
@@ -286,7 +199,7 @@ const Notice = () => {
                           : "bg-gray-100 text-gray-500"
                       }`}
                     >
-                      {category.count}
+                      {getCategoryCount(category.id)}
                     </span>
                   </button>
                 ))}
@@ -345,7 +258,7 @@ const Notice = () => {
                 <div className="grid gap-6">
                   {pinnedNotices.map((notice) => (
                     <div
-                      key={notice.id}
+                      key={notice._id}
                       className="group relative bg-gradient-to-r from-amber-50/80 via-yellow-50/80 to-orange-50/80 rounded-2xl p-6 border-l-4 border-amber-500 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-[1.01]"
                     >
                       <div className="absolute top-4 right-4 flex items-center gap-2">
@@ -366,20 +279,15 @@ const Notice = () => {
                                 ? "High Priority"
                                 : notice.priority === "medium"
                                   ? "Medium Priority"
-                                  : "Low Priority"}
+                                  : notice.priority === "low"
+                                  ? "Low Priority"
+                                  : "Normal"}
                             </span>
                             <span
                               className={`px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${getCategoryColor(notice.category)} text-white shadow-sm`}
                             >
-                              {notice.category.charAt(0).toUpperCase() +
-                                notice.category.slice(1)}
+                              {notice.category ? notice.category.charAt(0).toUpperCase() + notice.category.slice(1) : "General"}
                             </span>
-                            {notice.trending && (
-                              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs">
-                                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-                                Trending
-                              </span>
-                            )}
                           </div>
                           <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-amber-700 transition-colors">
                             {notice.title}
@@ -387,19 +295,21 @@ const Notice = () => {
                           <p className="text-gray-600 text-sm mb-4 leading-relaxed">
                             {notice.description}
                           </p>
-                          <div className="flex items-center gap-5 text-xs">
+                          <div className="flex items-center gap-5 text-xs flex-wrap">
                             <span className="flex items-center gap-1.5 text-gray-500">
                               <Calendar className="w-3.5 h-3.5" />
-                              {notice.date}
+                              {formatDate(notice.date)}
                             </span>
                             <span className="flex items-center gap-1.5 text-gray-500">
                               <User className="w-3.5 h-3.5" />
-                              {notice.author}
+                              {notice.postedBy || "Administration"}
                             </span>
-                            <span className="flex items-center gap-1.5 text-gray-500">
-                              <Eye className="w-3.5 h-3.5" />
-                              {notice.views} views
-                            </span>
+                            {notice.postTime && (
+                              <span className="flex items-center gap-1.5 text-gray-500">
+                                <Clock className="w-3.5 h-3.5" />
+                                {notice.postTime}
+                              </span>
+                            )}
                           </div>
                         </div>
                         <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-amber-600 font-medium text-sm hover:bg-amber-500 hover:text-white transition-all duration-300 shadow-sm">
@@ -427,7 +337,7 @@ const Notice = () => {
                 <div className="grid gap-5">
                   {normalNotices.map((notice) => (
                     <div
-                      key={notice.id}
+                      key={notice._id}
                       className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-purple-200 hover:scale-[1.01]"
                     >
                       <div className="flex items-start justify-between flex-wrap gap-4">
@@ -440,40 +350,37 @@ const Notice = () => {
                                 ? "High"
                                 : notice.priority === "medium"
                                   ? "Medium"
-                                  : "Low"}
+                                  : notice.priority === "low"
+                                  ? "Low"
+                                  : "Normal"}
                             </span>
                             <span
                               className={`px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${getCategoryColor(notice.category)} text-white shadow-sm`}
                             >
-                              {notice.category.charAt(0).toUpperCase() +
-                                notice.category.slice(1)}
+                              {notice.category ? notice.category.charAt(0).toUpperCase() + notice.category.slice(1) : "General"}
                             </span>
-                            {notice.trending && (
-                              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs">
-                                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-                                Trending
-                              </span>
-                            )}
                           </div>
                           <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors cursor-pointer">
                             {notice.title}
                           </h3>
-                          <p className="text-gray-500 text-sm mb-3 leading-relaxed">
+                          <p className="text-gray-500 text-sm mb-3 leading-relaxed line-clamp-2">
                             {notice.description}
                           </p>
-                          <div className="flex items-center gap-5 text-xs">
+                          <div className="flex items-center gap-5 text-xs flex-wrap">
                             <span className="flex items-center gap-1.5 text-gray-400">
                               <Calendar className="w-3.5 h-3.5" />
-                              {notice.date}
+                              {formatDate(notice.date)}
                             </span>
                             <span className="flex items-center gap-1.5 text-gray-400">
                               <User className="w-3.5 h-3.5" />
-                              {notice.author}
+                              {notice.postedBy || "Administration"}
                             </span>
-                            <span className="flex items-center gap-1.5 text-gray-400">
-                              <Eye className="w-3.5 h-3.5" />
-                              {notice.views} views
-                            </span>
+                            {notice.postTime && (
+                              <span className="flex items-center gap-1.5 text-gray-400">
+                                <Clock className="w-3.5 h-3.5" />
+                                {notice.postTime}
+                              </span>
+                            )}
                           </div>
                         </div>
                         <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 text-purple-600 font-medium text-sm hover:from-purple-600 hover:to-pink-600 hover:text-white transition-all duration-300 shadow-sm">

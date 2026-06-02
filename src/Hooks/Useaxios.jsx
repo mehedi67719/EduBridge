@@ -13,7 +13,7 @@ const useAxios = () => {
   });
 
   useEffect(() => {
-    // REQUEST interceptor (start loading)
+
     const requestInterceptor = axiosInstance.interceptors.request.use(
       (config) => {
         setLoading(true);
@@ -30,7 +30,7 @@ const useAxios = () => {
       }
     );
 
-    // RESPONSE interceptor (stop loading)
+    
     const responseInterceptor = axiosInstance.interceptors.response.use(
       (response) => {
         setLoading(false);
@@ -42,7 +42,7 @@ const useAxios = () => {
       }
     );
 
-    // cleanup
+
     return () => {
       axiosInstance.interceptors.request.eject(requestInterceptor);
       axiosInstance.interceptors.response.eject(responseInterceptor);
