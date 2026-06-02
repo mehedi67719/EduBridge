@@ -20,42 +20,31 @@ const Authprovider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  
-
-  const singinwithemail = (email, password) => {
-    const singinwihtemailandpassword = createUserWithEmailAndPassword(
-      auth,
-      email,
-      password,
-    );
-    return singinwihtemailandpassword;
+  const signup = (email, password) => {
+    return createUserWithEmailAndPassword(auth, email, password);
   };
 
-
-
-  const loginwithemail = (email, password) => {
-    const loginwithemailandpassword = signInWithEmailAndPassword(
-      auth,
-      email,
-      password,
-    );
-    return loginwithemailandpassword;
+  const login = (email, password) => {
+    return signInWithEmailAndPassword(auth, email, password);
   };
 
   const logout = () => {
     return signOut(auth);
   };
 
-
   const authinfo = {
-    singinwithemail,
-    loginwithemail,
+    signup,
+    login,
     logout,
     user,
     loading,
   };
 
-  return <Authcontext value={authinfo}>{children}</Authcontext>;
+  return (
+    <Authcontext.Provider value={authinfo}>
+      {children}
+    </Authcontext.Provider>
+  );
 };
 
 export default Authprovider;

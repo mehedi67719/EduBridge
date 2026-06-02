@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-
 import {
   User,
   Mail,
@@ -19,6 +18,9 @@ import {
 } from 'lucide-react';
 import { FaFacebook, FaGithub, FaTwitter } from 'react-icons/fa6';
 import { useForm } from 'react-hook-form';
+import Useauth from '../Hooks/Useauth';
+import Swal from 'sweetalert2';
+import useRegister from '../API/Authentication/Register';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -27,6 +29,9 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
   const [serverSuccess, setServerSuccess] = useState('');
+
+  const { signup } = Useauth();
+  const { Register } = useRegister();
 
   const {
     register,
@@ -43,7 +48,6 @@ const Register = () => {
       password: '',
       confirmPassword: '',
       department: '',
-      studentId: '',
       institutionName: '',
       secretCode: '',
       terms: false
@@ -51,12 +55,17 @@ const Register = () => {
   });
 
   const password = watch('password');
-  const selectedUserType = watch('userType');
 
   const onSubmit = async (data) => {
     setServerError('');
     setServerSuccess('');
     setIsLoading(true);
+
+    if (!data.terms) {
+      setServerError('Please agree to the Terms of Service and Privacy Policy');
+      setIsLoading(false);
+      return;
+    }
 
     const registrationData = {
       userType: userType,
@@ -64,33 +73,101 @@ const Register = () => {
       email: data.email,
       phone: data.phone,
       department: data.department,
-      studentId: data.studentId,
       institutionName: data.institutionName,
       secretCode: data.secretCode,
       password: data.password,
       confirmPassword: data.confirmPassword
     };
 
-    console.log('=== Registration Form Submission ===');
-    console.log('User Type:', userType);
-    console.log('Full Name:', data.fullName);
-    console.log('Email:', data.email);
-    console.log('Phone:', data.phone);
-    console.log('Department:', data.department);
-    console.log('Student ID:', data.studentId);
-    console.log('Institution Name:', data.institutionName);
-    console.log('Secret Code:', data.secretCode);
-    console.log('Password:', data.password);
-    console.log('Confirm Password:', data.confirmPassword);
-    console.log('Complete Registration Data:', registrationData);
-    console.log('=== End of Registration Data ===');
-
-    setTimeout(() => {
-      setServerSuccess(`Registration successful as ${userType}! Please check your email for verification.`);
+    try {
+      const authResult = await signup(data.email, data.password);
+      
+      if (authResult && authResult.user) {
+        const registrationResult = await Register(registrationData);
+        
+        if (registrationResult && registrationResult.data && registrationResult.data.success === true) {
+          setServerSuccess(`Registration successful as ${userType}!`);
+          
+          Swal.fire({
+            title: 'Registration Successful!',
+            text: `Welcome to EduBridge, ${data.fullName}!`,
+            icon: 'success',
+            confirmButtonColor: '#6366f1',
+            confirmButtonText: 'Continue',
+            timer: 3000,
+            timerProgressBar: true
+          });
+          
+          reset();
+          setValue('secretCode', '');
+          setValue('institutionName', '');
+          setValue('department', '');
+        } else if (registrationResult && registrationResult.success === true) {
+          setServerSuccess(`Registration successful as ${userType}!`);
+          
+          Swal.fire({
+            title: 'Registration Successful!',
+            text: `Welcome to EduBridge, ${data.fullName}!`,
+            icon: 'success',
+            confirmButtonColor: '#6366f1',
+            confirmButtonText: 'Continue',
+            timer: 3000,
+            timerProgressBar: true
+          });
+          
+          reset();
+          setValue('secretCode', '');
+          setValue('institutionName', '');
+          setValue('department', '');
+        } else if (registrationResult && registrationResult.message === "User registered successfully") {
+          setServerSuccess(`Registration successful as ${userType}!`);
+          
+          Swal.fire({
+            title: 'Registration Successful!',
+            text: `Welcome to EduBridge, ${data.fullName}!`,
+            icon: 'success',
+            confirmButtonColor: '#6366f1',
+            confirmButtonText: 'Continue',
+            timer: 3000,
+            timerProgressBar: true
+          });
+          
+          reset();
+          setValue('secretCode', '');
+          setValue('institutionName', '');
+          setValue('department', '');
+        } else {
+          const errorMsg = registrationResult?.data?.message || registrationResult?.message || 'Registration failed. Please try again.';
+          setServerError(errorMsg);
+          Swal.fire({
+            title: 'Registration Failed',
+            text: errorMsg,
+            icon: 'error',
+            confirmButtonColor: '#6366f1'
+          });
+        }
+      } else {
+        const errorMsg = authResult?.error?.message || 'Authentication failed. Please try again.';
+        setServerError(errorMsg);
+        Swal.fire({
+          title: 'Authentication Failed',
+          text: errorMsg,
+          icon: 'error',
+          confirmButtonColor: '#6366f1'
+        });
+      }
+    } catch (error) {
+      const errorMsg = error.message || 'An error occurred. Please try again.';
+      setServerError(errorMsg);
+      Swal.fire({
+        title: 'Error',
+        text: errorMsg,
+        icon: 'error',
+        confirmButtonColor: '#6366f1'
+      });
+    } finally {
       setIsLoading(false);
-      reset();
-      setValue('secretCode', '');
-    }, 1500);
+    }
   };
 
   const userTypes = [
@@ -208,6 +285,7 @@ const Register = () => {
                         setValue('institutionName', '');
                         setValue('secretCode', '');
                         setServerError('');
+                        setServerSuccess('');
                       }}
                       className={`flex-1 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                         userType === type.id
@@ -349,37 +427,20 @@ const Register = () => {
                   </div>
 
                   {userType === 'student' && (
-                    <>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Student ID
-                        </label>
-                        <div className="relative">
-                          <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <input
-                            type="text"
-                            {...register('studentId')}
-                            placeholder="Enter your student ID"
-                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Department
-                        </label>
-                        <select
-                          {...register('department')}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300 bg-white"
-                        >
-                          <option value="">Select Department</option>
-                          {departments.map((dept) => (
-                            <option key={dept} value={dept}>{dept}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Department
+                      </label>
+                      <select
+                        {...register('department')}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-300 bg-white"
+                      >
+                        <option value="">Select Department</option>
+                        {departments.map((dept) => (
+                          <option key={dept} value={dept}>{dept}</option>
+                        ))}
+                      </select>
+                    </div>
                   )}
 
                   {(userType === 'instructor' || userType === 'chip_instructor' || userType === 'junior_instructor' || userType === 'craft_instructor') && (
