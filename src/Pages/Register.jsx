@@ -21,6 +21,7 @@ import { useForm } from 'react-hook-form';
 import Useauth from '../Hooks/Useauth';
 import Swal from 'sweetalert2';
 import useRegister from '../API/Authentication/Register';
+import { useNavigate } from 'react-router';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -29,6 +30,7 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
   const [serverSuccess, setServerSuccess] = useState('');
+  const navigate = useNavigate();
 
   const { signup } = Useauth();
   const { Register } = useRegister();
@@ -80,14 +82,13 @@ const Register = () => {
     };
 
     try {
-      const authResult = await signup(data.email, data.password);
+      const registrationResult = await Register(registrationData);
       
-      if (authResult && authResult.user) {
-        const registrationResult = await Register(registrationData);
+      if (registrationResult && (registrationResult.data?.success === true || registrationResult.success === true || registrationResult.message === "User registered successfully")) {
         
-        if (registrationResult && registrationResult.data && registrationResult.data.success === true) {
-          setServerSuccess(`Registration successful as ${userType}!`);
-          
+        const authResult = await signup(data.email, data.password);
+        
+        if (authResult && authResult.user) {
           Swal.fire({
             title: 'Registration Successful!',
             text: `Welcome to EduBridge, ${data.fullName}!`,
@@ -96,61 +97,30 @@ const Register = () => {
             confirmButtonText: 'Continue',
             timer: 3000,
             timerProgressBar: true
+          }).then(() => {
+            navigate('/login');
           });
           
           reset();
           setValue('secretCode', '');
           setValue('institutionName', '');
           setValue('department', '');
-        } else if (registrationResult && registrationResult.success === true) {
           setServerSuccess(`Registration successful as ${userType}!`);
-          
-          Swal.fire({
-            title: 'Registration Successful!',
-            text: `Welcome to EduBridge, ${data.fullName}!`,
-            icon: 'success',
-            confirmButtonColor: '#6366f1',
-            confirmButtonText: 'Continue',
-            timer: 3000,
-            timerProgressBar: true
-          });
-          
-          reset();
-          setValue('secretCode', '');
-          setValue('institutionName', '');
-          setValue('department', '');
-        } else if (registrationResult && registrationResult.message === "User registered successfully") {
-          setServerSuccess(`Registration successful as ${userType}!`);
-          
-          Swal.fire({
-            title: 'Registration Successful!',
-            text: `Welcome to EduBridge, ${data.fullName}!`,
-            icon: 'success',
-            confirmButtonColor: '#6366f1',
-            confirmButtonText: 'Continue',
-            timer: 3000,
-            timerProgressBar: true
-          });
-          
-          reset();
-          setValue('secretCode', '');
-          setValue('institutionName', '');
-          setValue('department', '');
         } else {
-          const errorMsg = registrationResult?.data?.message || registrationResult?.message || 'Registration failed. Please try again.';
+          const errorMsg = authResult?.error?.message || 'Firebase account creation failed';
           setServerError(errorMsg);
           Swal.fire({
-            title: 'Registration Failed',
+            title: 'Firebase Error',
             text: errorMsg,
             icon: 'error',
             confirmButtonColor: '#6366f1'
           });
         }
       } else {
-        const errorMsg = authResult?.error?.message || 'Authentication failed. Please try again.';
+        const errorMsg = registrationResult?.data?.message || registrationResult?.message || 'Registration failed. Please try again.';
         setServerError(errorMsg);
         Swal.fire({
-          title: 'Authentication Failed',
+          title: 'Registration Failed',
           text: errorMsg,
           icon: 'error',
           confirmButtonColor: '#6366f1'
