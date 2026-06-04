@@ -20,8 +20,8 @@ import { FaFacebook, FaGithub, FaTwitter } from 'react-icons/fa6';
 import { useForm } from 'react-hook-form';
 import Useauth from '../Hooks/Useauth';
 import Swal from 'sweetalert2';
-import useRegister from '../API/Authentication/Register';
 import { useNavigate } from 'react-router';
+import { PostRegister } from '../API/Authentication/Register';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -33,8 +33,6 @@ const Register = () => {
   const navigate = useNavigate();
 
   const { signup } = Useauth();
-  const { Register } = useRegister();
-
   const {
     register,
     handleSubmit,
@@ -82,7 +80,7 @@ const Register = () => {
     };
 
     try {
-      const registrationResult = await Register(registrationData);
+      const registrationResult = await PostRegister(registrationData);
       
       if (registrationResult && (registrationResult.data?.success === true || registrationResult.success === true || registrationResult.message === "User registered successfully")) {
         

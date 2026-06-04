@@ -3,15 +3,13 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import { RouterProvider } from "react-router/dom";
 import { router } from "./Components/router";
-import Loadingprovider from "./Hooks/Loading/Loadingprovider";
+
 import Authprovider from "./Authentaction/Authprovider";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Authprovider>
-      <Loadingprovider>
         <RouterProvider router={router} />
-      </Loadingprovider>
     </Authprovider>
   </StrictMode>,
 );

@@ -17,21 +17,20 @@ import {
   Bookmark,
   TrendingUp,
 } from "lucide-react";
-import { Loadingcontext } from "../../Hooks/Loading/LoadingContext";
-import Useloading from "../../Hooks/Useloading";
+
 import { loadNotice } from "../../API/Notice";
+import Loading from "../../Components/Loading";
 
 const Notice = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [noticesData, setNoticesData] = useState([]);
-  const { loading, setLoading } = Useloading(Loadingcontext);
-
+  const [loading, setLoading] = useState(true); // Changed to true initially
 
   useEffect(() => {
     const getData = async () => {
-      setLoading(true);
       try {
+        setLoading(true);
         const data = await loadNotice();
         if (data && Array.isArray(data)) {
           setNoticesData(data);
@@ -50,34 +49,57 @@ const Notice = () => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading notices...</p>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
-  const notices = noticesData.length > 0 ? noticesData : [];
+  const notices = noticesData;
 
   const categories = [
-    { id: "all", name: "All Notices", icon: Bell, color: "from-cyan-500 to-blue-500" },
-    { id: "exam", name: "Examination", icon: Calendar, color: "from-purple-500 to-pink-500" },
-    { id: "event", name: "Events", icon: Megaphone, color: "from-orange-500 to-red-500" },
-    { id: "holiday", name: "Holidays", icon: Clock, color: "from-emerald-500 to-teal-500" },
-    { id: "result", name: "Results", icon: TrendingUp, color: "from-blue-500 to-indigo-500" },
-    { id: "meeting", name: "Meetings", icon: User, color: "from-rose-500 to-pink-500" },
+    {
+      id: "all",
+      name: "All Notices",
+      icon: Bell,
+      color: "from-cyan-500 to-blue-500",
+    },
+    {
+      id: "exam",
+      name: "Examination",
+      icon: Calendar,
+      color: "from-purple-500 to-pink-500",
+    },
+    {
+      id: "event",
+      name: "Events",
+      icon: Megaphone,
+      color: "from-orange-500 to-red-500",
+    },
+    {
+      id: "holiday",
+      name: "Holidays",
+      icon: Clock,
+      color: "from-emerald-500 to-teal-500",
+    },
+    {
+      id: "result",
+      name: "Results",
+      icon: TrendingUp,
+      color: "from-blue-500 to-indigo-500",
+    },
+    {
+      id: "meeting",
+      name: "Meetings",
+      icon: User,
+      color: "from-rose-500 to-pink-500",
+    },
   ];
 
   const getCategoryCount = (categoryId) => {
     if (categoryId === "all") return notices.length;
-    return notices.filter(notice => notice.category === categoryId).length;
+    return notices.filter((notice) => notice.category === categoryId).length;
   };
 
   const getPriorityStyle = (priority) => {
-    switch (priority) {
+    switch (priority?.toLowerCase()) {
       case "high":
         return "bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-lg shadow-red-500/20";
       case "medium":
@@ -90,7 +112,7 @@ const Notice = () => {
   };
 
   const getCategoryColor = (category) => {
-    switch (category) {
+    switch (category?.toLowerCase()) {
       case "exam":
         return "from-purple-500 to-pink-500";
       case "event":
@@ -108,28 +130,38 @@ const Notice = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return "Date not specified";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "Invalid date";
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch (error) {
+      return "Date not specified";
+    }
   };
 
   const filteredNotices = notices.filter((notice) => {
-    const matchesCategory = selectedCategory === "all" || notice.category === selectedCategory;
+    const matchesCategory =
+      selectedCategory === "all" || notice.category === selectedCategory;
     const matchesSearch =
-      (notice.title && notice.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (notice.description && notice.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      (notice.title &&
+        notice.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (notice.description &&
+        notice.description.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
-  const pinnedNotices = filteredNotices.filter((notice) => notice.pinned === true);
+  const pinnedNotices = filteredNotices.filter(
+    (notice) => notice.pinned === true
+  );
   const normalNotices = filteredNotices.filter((notice) => !notice.pinned);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
-      <div className="container pt-10 lg:pt-14 pb-6">
+      <div className="container mx-auto px-4 pt-10 lg:pt-14 pb-6">
         <div className="text-center">
           <div className="inline-flex items-center gap-2 bg-white rounded-full px-4 py-2 mb-6 shadow-md border border-gray-100">
             <Sparkles className="w-4 h-4 text-amber-500" />
@@ -150,8 +182,9 @@ const Notice = () => {
         </div>
       </div>
 
-      <div className="container py-8 lg:py-12">
+      <div className="container mx-auto px-4 py-8 lg:py-12">
         <div className="flex flex-col lg:flex-row gap-8">
+      
           <div className="lg:w-80 flex-shrink-0">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 sticky top-24 border border-white/50">
               <div className="flex items-center gap-2 mb-6 pb-3 border-b border-gray-200">
@@ -230,6 +263,7 @@ const Notice = () => {
             </div>
           </div>
 
+    
           <div className="flex-1">
             <div className="mb-8">
               <div className="relative group">
@@ -243,6 +277,7 @@ const Notice = () => {
                 />
               </div>
             </div>
+
 
             {pinnedNotices.length > 0 && (
               <div className="mb-10">
@@ -278,15 +313,18 @@ const Notice = () => {
                               {notice.priority === "high"
                                 ? "High Priority"
                                 : notice.priority === "medium"
-                                  ? "Medium Priority"
-                                  : notice.priority === "low"
-                                  ? "Low Priority"
-                                  : "Normal"}
+                                ? "Medium Priority"
+                                : notice.priority === "low"
+                                ? "Low Priority"
+                                : "Normal"}
                             </span>
                             <span
                               className={`px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${getCategoryColor(notice.category)} text-white shadow-sm`}
                             >
-                              {notice.category ? notice.category.charAt(0).toUpperCase() + notice.category.slice(1) : "General"}
+                              {notice.category
+                                ? notice.category.charAt(0).toUpperCase() +
+                                  notice.category.slice(1)
+                                : "General"}
                             </span>
                           </div>
                           <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-amber-700 transition-colors">
@@ -322,6 +360,7 @@ const Notice = () => {
               </div>
             )}
 
+            {/* All Notices */}
             <div>
               <div className="flex items-center gap-2 mb-5">
                 <div className="w-7 h-7 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
@@ -349,15 +388,18 @@ const Notice = () => {
                               {notice.priority === "high"
                                 ? "High"
                                 : notice.priority === "medium"
-                                  ? "Medium"
-                                  : notice.priority === "low"
-                                  ? "Low"
-                                  : "Normal"}
+                                ? "Medium"
+                                : notice.priority === "low"
+                                ? "Low"
+                                : "Normal"}
                             </span>
                             <span
                               className={`px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${getCategoryColor(notice.category)} text-white shadow-sm`}
                             >
-                              {notice.category ? notice.category.charAt(0).toUpperCase() + notice.category.slice(1) : "General"}
+                              {notice.category
+                                ? notice.category.charAt(0).toUpperCase() +
+                                  notice.category.slice(1)
+                                : "General"}
                             </span>
                           </div>
                           <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors cursor-pointer">
