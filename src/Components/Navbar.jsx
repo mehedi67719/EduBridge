@@ -34,7 +34,7 @@ const Navbar = () => {
       setIsUserMenuOpen(false);
       setIsMobileMenuOpen(false);
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error(error);
     }
   };
 
@@ -49,61 +49,59 @@ const Navbar = () => {
     { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   ];
 
-  const filteredNavLinks = user ? navLinks : navLinks.filter(link => link.name !== "Dashboard");
-
-  if (loading) {
-    return (
-      <div className="w-full bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 shadow-xl sticky top-0 z-50 border-b border-purple-500/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-3">
-            <Logo />
-            <div className="w-8 h-8 rounded-full bg-purple-600/30 animate-pulse"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-
-  console.log(dbUser)
+  const filteredNavLinks = dbUser
+    ? navLinks
+    : navLinks.filter((l) => l.name !== "Dashboard");
 
   return (
-    <div className="w-full bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 shadow-xl sticky top-0 z-50 border-b border-purple-500/20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between py-2 md:py-3">
+    <div className="w-full bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 shadow-xl sticky top-0 z-50 border-b border-purple-500/20 overflow-x-hidden">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+        <div className="flex items-center justify-between h-14 sm:h-16">
+
           <Link to="/" className="flex-shrink-0">
             <Logo />
           </Link>
 
-          <div className="hidden lg:flex items-center gap-1 xl:gap-2">
+          <div className="hidden lg:flex items-center gap-2">
             {filteredNavLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.href}
-                className="flex items-center gap-1 xl:gap-2 px-2 xl:px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 font-medium text-sm xl:text-base whitespace-nowrap group"
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 whitespace-nowrap"
               >
-                <link.icon className="w-4 h-4 group-hover:scale-110 group-hover:text-cyan-400 transition-all duration-300" />
-                <span>{link.name}</span>
+                <link.icon className="w-4 h-4" />
+                <span className="text-sm">{link.name}</span>
               </Link>
             ))}
           </div>
-          
-          <div className="flex items-center gap-2">
-            {dbUser ? (
+
+          <div className="flex items-center gap-2 flex-shrink-0">
+
+            {loading ? (
+              <div className="w-8 h-8 rounded-full bg-white/20 animate-pulse" />
+            ) : dbUser ? (
               <div className="relative">
+
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600/40 to-purple-600/40 hover:from-indigo-600/60 hover:to-purple-600/60 border border-indigo-500/30 transition-all duration-300 group"
+                  className="flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-lg bg-indigo-600/30 border border-indigo-500/30 max-w-[180px]"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg">
-                    <dbUser className="w-4 h-4 text-white" />
+                  <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0">
+                    <User className="w-4 h-4 text-white" />
                   </div>
-                  <div className="text-left hidden lg:block">
-                    <p className="text-white text-sm font-medium max-w-[100px] truncate">
-                      {dbUser.displayName || dbUser.email?.split('@')[0]}
+
+                  <div className="hidden sm:block min-w-0">
+                    <p className="text-white text-xs truncate max-w-[90px]">
+                      {dbUser.fullName || dbUser.email?.split("@")[0]}
                     </p>
+                    {dbUser.userType && (
+                      <p className="text-purple-300 text-[10px] truncate max-w-[90px]">
+                        {dbUser.userType}
+                      </p>
+                    )}
                   </div>
-                  <ChevronDown className={`w-4 h-4 text-white transition-transform duration-300 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+
+                  <ChevronDown className="w-4 h-4 text-white flex-shrink-0" />
                 </button>
 
                 {isUserMenuOpen && (
@@ -111,62 +109,41 @@ const Navbar = () => {
                     <div
                       className="fixed inset-0 z-40"
                       onClick={() => setIsUserMenuOpen(false)}
-                    ></div>
-                    <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-2xl py-2 z-50 border border-gray-100">
-                      <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-t-xl">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center shadow-md">
-                            <User className="w-4 h-4 text-white" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold text-gray-900 truncate">
-                              {user.displayName || user.email?.split('@')[0]}
-                            </p>
-                            <p className="text-xs text-gray-500 truncate">
-                              {user.email}
-                            </p>
-                          </div>
-                        </div>
+                    />
+
+                    <div className="absolute right-0 mt-2 w-60 sm:w-56 bg-white rounded-xl shadow-xl z-50 overflow-hidden">
+
+                      <div className="px-4 py-3 border-b bg-gray-50">
+                        <p className="text-sm font-semibold truncate">
+                          {dbUser.fullName || dbUser.email?.split("@")[0]}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {dbUser.email}
+                        </p>
                       </div>
-                      
-                      <div className="py-1">
-                        <Link
-                          to="/dashboard"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          <LayoutDashboard className="w-4 h-4 text-indigo-500" />
-                          <span>Dashboard</span>
-                        </Link>
-                        
-                        <Link
-                          to="/profile"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          <UserCircle className="w-4 h-4 text-purple-500" />
-                          <span>Profile</span>
-                        </Link>
-                        
-                        <Link
-                          to="/settings"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          <Settings className="w-4 h-4 text-gray-500" />
-                          <span>Settings</span>
-                        </Link>
-                      </div>
-                      
-                      <div className="border-t border-gray-100 pt-1">
-                        <button
-                          onClick={handleLogout}
-                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                        >
-                          <LogOut className="w-4 h-4" />
-                          <span>Logout</span>
-                        </button>
-                      </div>
+
+                      <Link className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100" to="/dashboard" onClick={() => setIsUserMenuOpen(false)}>
+                        <LayoutDashboard className="w-4 h-4" />
+                        Dashboard
+                      </Link>
+
+                      <Link className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100" to="/profile" onClick={() => setIsUserMenuOpen(false)}>
+                        <UserCircle className="w-4 h-4" />
+                        Profile
+                      </Link>
+
+                      <Link className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100" to="/settings" onClick={() => setIsUserMenuOpen(false)}>
+                        <Settings className="w-4 h-4" />
+                        Settings
+                      </Link>
+
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 border-t"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                      </button>
                     </div>
                   </>
                 )}
@@ -174,47 +151,47 @@ const Navbar = () => {
             ) : (
               <Link
                 to="/login"
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:shadow-lg transition-all duration-300 font-medium text-sm group"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500 text-white text-sm"
               >
-                <LogIn className="w-4 h-4 group-hover:scale-110 transition-all duration-300" />
-                <span className="hidden sm:inline">Login</span>
+                <LogIn className="w-4 h-4" />
+                Login
               </Link>
             )}
-            
+
             <button
               onClick={() => {
                 setIsMobileMenuOpen(!isMobileMenuOpen);
                 setIsUserMenuOpen(false);
               }}
-              className="lg:hidden text-gray-300 hover:text-white focus:outline-none p-2 rounded-lg hover:bg-white/10 transition-all duration-300"
+              className="lg:hidden p-2 text-white"
             >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isMobileMenuOpen ? <X /> : <Menu />}
             </button>
           </div>
         </div>
 
         {isMobileMenuOpen && (
-          <div className="lg:hidden py-3 space-y-1 border-t border-purple-500/20 mt-2">
+          <div className="lg:hidden py-2 space-y-1 border-t border-purple-500/20">
             {filteredNavLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.href}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 font-medium"
                 onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg"
               >
                 <link.icon className="w-5 h-5" />
-                <span>{link.name}</span>
+                {link.name}
               </Link>
             ))}
-            
-            {!user && (
+
+            {!dbUser && !loading && (
               <Link
                 to="/login"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:shadow-lg transition-all duration-300 font-medium mt-2"
                 onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 bg-indigo-500 text-white rounded-lg"
               >
                 <LogIn className="w-5 h-5" />
-                <span>Login</span>
+                Login
               </Link>
             )}
           </div>
