@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Home,
   Bell,
@@ -37,6 +37,18 @@ const Navbar = () => {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    if (isUserMenuOpen || isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isUserMenuOpen, isMobileMenuOpen]);
 
   const navLinks = [
     { name: "Home", icon: Home, href: "/" },
@@ -80,7 +92,7 @@ const Navbar = () => {
             {loading ? (
               <div className="w-8 h-8 rounded-full bg-white/20 animate-pulse" />
             ) : dbUser ? (
-              <div className="relative">
+              <div className="relative z-[9999]">
 
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -107,11 +119,11 @@ const Navbar = () => {
                 {isUserMenuOpen && (
                   <>
                     <div
-                      className="fixed inset-0 z-40"
+                      className="fixed inset-0 z-[9998]"
                       onClick={() => setIsUserMenuOpen(false)}
                     />
 
-                    <div className="absolute right-0 mt-2 w-60 sm:w-56 bg-white rounded-xl shadow-xl z-50 overflow-hidden">
+                    <div className="absolute right-0 mt-2 w-60 sm:w-56 bg-white rounded-xl shadow-xl z-[9999] overflow-hidden">
 
                       <div className="px-4 py-3 border-b bg-gray-50">
                         <p className="text-sm font-semibold truncate">
@@ -122,17 +134,29 @@ const Navbar = () => {
                         </p>
                       </div>
 
-                      <Link className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100" to="/dashboard" onClick={() => setIsUserMenuOpen(false)}>
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
+                      >
                         <LayoutDashboard className="w-4 h-4" />
                         Dashboard
                       </Link>
 
-                      <Link className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100" to="/profile" onClick={() => setIsUserMenuOpen(false)}>
+                      <Link
+                        to="/profile"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
+                      >
                         <UserCircle className="w-4 h-4" />
                         Profile
                       </Link>
 
-                      <Link className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100" to="/settings" onClick={() => setIsUserMenuOpen(false)}>
+                      <Link
+                        to="/settings"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
+                      >
                         <Settings className="w-4 h-4" />
                         Settings
                       </Link>
