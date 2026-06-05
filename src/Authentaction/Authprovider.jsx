@@ -7,17 +7,41 @@ import {
   signOut,
 } from "firebase/auth";
 import { auth } from "../Firebase/firebase.init";
+import { loginuser } from "../API/Users/Loginuser";
 
 const Authprovider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [dbUser, setDbUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    let isMounted = true;
+
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      setLoading(false);
+
+      if (currentUser?.email) {
+        try {
+          const userdata = await loginuser(currentUser.email);
+
+          if (isMounted) {
+            setDbUser(userdata);
+          }
+        } catch (err) {
+          console.log(err);
+          if (isMounted) setDbUser(null);
+        }
+      } else {
+        if (isMounted) setDbUser(null);
+      }
+
+      if (isMounted) setLoading(false);
     });
-    return () => unsubscribe();
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   const signup = (email, password) => {
@@ -28,8 +52,10 @@ const Authprovider = ({ children }) => {
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  const logout = () => {
-    return signOut(auth);
+  const logout = async () => {
+    await signOut(auth);
+    setUser(null);
+    setDbUser(null);
   };
 
   const authinfo = {
@@ -37,6 +63,7 @@ const Authprovider = ({ children }) => {
     login,
     logout,
     user,
+    dbUser,
     loading,
   };
 

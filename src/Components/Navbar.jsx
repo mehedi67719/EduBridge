@@ -24,7 +24,7 @@ import Useauth from "../Hooks/Useauth";
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const { user, loading, logout } = Useauth();
+  const { dbUser, loading, logout } = Useauth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -64,6 +64,9 @@ const Navbar = () => {
     );
   }
 
+
+  console.log(dbUser)
+
   return (
     <div className="w-full bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 shadow-xl sticky top-0 z-50 border-b border-purple-500/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -86,18 +89,18 @@ const Navbar = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            {user ? (
+            {dbUser ? (
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600/40 to-purple-600/40 hover:from-indigo-600/60 hover:to-purple-600/60 border border-indigo-500/30 transition-all duration-300 group"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg">
-                    <User className="w-4 h-4 text-white" />
+                    <dbUser className="w-4 h-4 text-white" />
                   </div>
                   <div className="text-left hidden lg:block">
                     <p className="text-white text-sm font-medium max-w-[100px] truncate">
-                      {user.displayName || user.email?.split('@')[0]}
+                      {dbUser.displayName || dbUser.email?.split('@')[0]}
                     </p>
                   </div>
                   <ChevronDown className={`w-4 h-4 text-white transition-transform duration-300 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
