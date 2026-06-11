@@ -1,4 +1,4 @@
-import { axiosSecure } from "../Hooks/Axiosinstance";
+import { axiosSecure } from "../../Hooks/Axiosinstance";
 
 
 export const loadNotice = async () => {

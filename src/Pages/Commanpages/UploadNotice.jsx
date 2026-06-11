@@ -4,9 +4,10 @@ import {
   Briefcase, Wrench, Crown, Bell, CheckCircle, FileText,
   Paperclip, Plus, Trash2, Globe, Loader2
 } from 'lucide-react';
+import Swal from 'sweetalert2';
 import Useauth from '../../Hooks/Useauth';
 import useCloudinaryUpload from '../../Hooks/useCloudinaryUpload';
-
+import { uploadNotice } from '../../API/Notice/UploadNotice';
 
 const UploadNotice = () => {
   const { dbUser, loading: authLoading } = Useauth();
@@ -40,6 +41,47 @@ const UploadNotice = () => {
   ];
 
   const noticeCategories = ['General', 'Examination', 'Event', 'Meeting', 'Holiday', 'Result', 'Workshop', 'Seminar'];
+
+  const showSuccessAlert = (message) => {
+    Swal.fire({
+      title: 'Success!',
+      text: message,
+      icon: 'success',
+      confirmButtonColor: '#6366f1',
+      timer: 3000,
+      showConfirmButton: true,
+      background: 'white',
+      backdrop: true
+    });
+  };
+
+  const showErrorAlert = (message) => {
+    Swal.fire({
+      title: 'Error!',
+      text: message,
+      icon: 'error',
+      confirmButtonColor: '#6366f1',
+      background: 'white',
+      backdrop: true
+    });
+  };
+
+  const showLoadingAlert = () => {
+    Swal.fire({
+      title: 'Uploading...',
+      text: 'Please wait while we publish your notice',
+      icon: 'info',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+  };
+
+  const closeAlert = () => {
+    Swal.close();
+  };
 
   const updateForm = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -77,16 +119,16 @@ const UploadNotice = () => {
     updateForm('imageUrls', updated);
   };
 
-  const logFormData = () => {
-    const selectedRolesData = formData.selectedRoles.map(roleId => {
+  const prepareFormData = () => {
+    const selectedRolesNames = formData.selectedRoles.map(roleId => {
       const role = roles.find(r => r.id === roleId);
-      return { id: roleId, name: role?.name };
+      return role?.name;
     });
 
-    const finalData = {
+    return {
       noticeTitle: formData.noticeTitle,
       noticeContent: formData.noticeContent,
-      targetRoles: selectedRolesData,
+      targetRoles: selectedRolesNames,
       priority: formData.priority,
       category: formData.customCategory || formData.noticeType,
       attachments: formData.attachments.map(f => ({ name: f.name, size: f.size, type: f.type })),
@@ -99,43 +141,51 @@ const UploadNotice = () => {
       createdAt: new Date().toISOString(),
       status: 'published'
     };
-
-    console.log('========== NOTICE PUBLISHED ==========');
-    console.log(JSON.stringify(finalData, null, 2));
-    console.log('======================================');
-    
-    return finalData;
   };
 
   const handleSubmit = async () => {
     if (!formData.noticeTitle || !formData.noticeContent || formData.selectedRoles.length === 0) {
-      alert('Please fill all required fields and select at least one role');
+      showErrorAlert('Please fill all required fields and select at least one role');
       return;
     }
 
     setUiState(prev => ({ ...prev, isSubmitting: true }));
+    showLoadingAlert();
     
-    setTimeout(() => {
-      const submittedData = logFormData();
+    try {
+      const finalData = prepareFormData();
+      console.log('Submitting notice:', finalData);
       
-      setFormData({
-        noticeTitle: '',
-        noticeContent: '',
-        selectedRoles: [],
-        priority: 'medium',
-        noticeType: 'General',
-        customCategory: '',
-        attachments: [],
-        imageUrls: []
-      });
-      setUiState({ isSubmitting: false, showPreview: false, showCustomInput: false });
+      const result = await uploadNotice(finalData);
+      closeAlert();
       
-      alert('Notice uploaded successfully! Check console for details.');
-    }, 1000);
+      if (result.success) {
+        showSuccessAlert('Notice uploaded successfully!');
+        
+        setFormData({
+          noticeTitle: '',
+          noticeContent: '',
+          selectedRoles: [],
+          priority: 'medium',
+          noticeType: 'General',
+          customCategory: '',
+          attachments: [],
+          imageUrls: []
+        });
+        setUiState({ isSubmitting: false, showPreview: false, showCustomInput: false });
+      } else {
+        showErrorAlert(result.message || 'Failed to upload notice');
+        setUiState(prev => ({ ...prev, isSubmitting: false }));
+      }
+    } catch (error) {
+      closeAlert();
+      console.error('Upload error:', error);
+      showErrorAlert('Something went wrong! Please try again.');
+      setUiState(prev => ({ ...prev, isSubmitting: false }));
+    }
   };
 
   const handlePreview = () => {
-    logFormData();
     setUiState(prev => ({ ...prev, showPreview: !prev.showPreview }));
   };
 

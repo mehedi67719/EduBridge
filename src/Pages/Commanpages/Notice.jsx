@@ -18,7 +18,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-import { loadNotice } from "../../API/Notice";
+import { loadNotice } from "../../API/Notice/Notice";
 import Loading from "../../Components/Loading";
 
 const Notice = () => {

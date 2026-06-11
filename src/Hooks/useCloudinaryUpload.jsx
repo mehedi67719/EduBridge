@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 const CLOUD_NAME = "dkdav8g2p";
-const UPLOAD_PRESET = "edu-bridge5644"; // 👈 Cloudinary dashboard থেকে নিতে হবে
+const UPLOAD_PRESET = "edu-bridge5644"; 
 
 const useCloudinaryUpload = () => {
   const [loading, setLoading] = useState(false);
