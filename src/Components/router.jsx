@@ -11,6 +11,7 @@ import Chat from "../Pages/Commanpages/Chat";
 import Dashboard from "../Pages/Commanpages/Dashboard";
 import Login from "../Pages/Login";
 import Register from "../Pages/Register";
+import UploadNotice from "../Pages/Commanpages/UploadNotice";
 
 
 export const router = createBrowserRouter([
@@ -57,6 +58,10 @@ export const router = createBrowserRouter([
       {
         path:"/register",
         Component:Register
+      },
+      {
+        path:'/upload-notice',
+        Component:UploadNotice
       }
     ],
   },
