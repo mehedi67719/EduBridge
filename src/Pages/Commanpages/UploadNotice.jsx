@@ -8,9 +8,11 @@ import Swal from 'sweetalert2';
 import Useauth from '../../Hooks/Useauth';
 import useCloudinaryUpload from '../../Hooks/useCloudinaryUpload';
 import { uploadNotice } from '../../API/Notice/UploadNotice';
+import Loading from '../../Components/Loading';
+
 
 const UploadNotice = () => {
-  const { dbUser, loading: authLoading } = Useauth();
+  const { dbUser } = Useauth();
   const { uploadImage, loading: uploadLoading, error: uploadError } = useCloudinaryUpload();
 
   const [formData, setFormData] = useState({
@@ -41,47 +43,6 @@ const UploadNotice = () => {
   ];
 
   const noticeCategories = ['General', 'Examination', 'Event', 'Meeting', 'Holiday', 'Result', 'Workshop', 'Seminar'];
-
-  const showSuccessAlert = (message) => {
-    Swal.fire({
-      title: 'Success!',
-      text: message,
-      icon: 'success',
-      confirmButtonColor: '#6366f1',
-      timer: 3000,
-      showConfirmButton: true,
-      background: 'white',
-      backdrop: true
-    });
-  };
-
-  const showErrorAlert = (message) => {
-    Swal.fire({
-      title: 'Error!',
-      text: message,
-      icon: 'error',
-      confirmButtonColor: '#6366f1',
-      background: 'white',
-      backdrop: true
-    });
-  };
-
-  const showLoadingAlert = () => {
-    Swal.fire({
-      title: 'Uploading...',
-      text: 'Please wait while we publish your notice',
-      icon: 'info',
-      allowOutsideClick: false,
-      showConfirmButton: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-  };
-
-  const closeAlert = () => {
-    Swal.close();
-  };
 
   const updateForm = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -136,7 +97,8 @@ const UploadNotice = () => {
       createdBy: {
         email: dbUser?.email,
         userType: dbUser?.userType,
-        fullName: dbUser?.fullName
+        fullName: dbUser?.fullName,
+        institutionName:dbUser.institutionName
       },
       createdAt: new Date().toISOString(),
       status: 'published'
@@ -145,22 +107,31 @@ const UploadNotice = () => {
 
   const handleSubmit = async () => {
     if (!formData.noticeTitle || !formData.noticeContent || formData.selectedRoles.length === 0) {
-      showErrorAlert('Please fill all required fields and select at least one role');
+      Swal.fire({
+        title: 'Error!',
+        text: 'Please fill all required fields and select at least one role',
+        icon: 'error',
+        confirmButtonColor: '#6366f1'
+      });
       return;
     }
 
     setUiState(prev => ({ ...prev, isSubmitting: true }));
-    showLoadingAlert();
     
     try {
       const finalData = prepareFormData();
       console.log('Submitting notice:', finalData);
       
       const result = await uploadNotice(finalData);
-      closeAlert();
       
       if (result.success) {
-        showSuccessAlert('Notice uploaded successfully!');
+        Swal.fire({
+          title: 'Success!',
+          text: 'Notice uploaded successfully!',
+          icon: 'success',
+          confirmButtonColor: '#6366f1',
+          timer: 2000
+        });
         
         setFormData({
           noticeTitle: '',
@@ -174,13 +145,22 @@ const UploadNotice = () => {
         });
         setUiState({ isSubmitting: false, showPreview: false, showCustomInput: false });
       } else {
-        showErrorAlert(result.message || 'Failed to upload notice');
+        Swal.fire({
+          title: 'Error!',
+          text: result.message || 'Failed to upload notice',
+          icon: 'error',
+          confirmButtonColor: '#6366f1'
+        });
         setUiState(prev => ({ ...prev, isSubmitting: false }));
       }
     } catch (error) {
-      closeAlert();
       console.error('Upload error:', error);
-      showErrorAlert('Something went wrong! Please try again.');
+      Swal.fire({
+        title: 'Error!',
+        text: 'Something went wrong! Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#6366f1'
+      });
       setUiState(prev => ({ ...prev, isSubmitting: false }));
     }
   };
@@ -196,13 +176,7 @@ const UploadNotice = () => {
 
   const getCategoryDisplay = () => formData.customCategory || formData.noticeType;
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-      </div>
-    );
-  }
+// console.log(dbUser)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
@@ -239,165 +213,181 @@ const UploadNotice = () => {
               </div>
 
               <div className="p-6 space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Notice Title <span className="text-red-500">*</span></label>
-                  <input
-                    type="text"
-                    value={formData.noticeTitle}
-                    onChange={(e) => updateForm('noticeTitle', e.target.value)}
-                    placeholder="Enter notice title"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Notice Content <span className="text-red-500">*</span></label>
-                  <textarea
-                    value={formData.noticeContent}
-                    onChange={(e) => updateForm('noticeContent', e.target.value)}
-                    rows="5"
-                    placeholder="Write the notice content here..."
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 resize-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-                    <select
-                      value={formData.priority}
-                      onChange={(e) => updateForm('priority', e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none"
-                    >
-                      <option value="low">Low Priority</option>
-                      <option value="medium">Medium Priority</option>
-                      <option value="high">High Priority</option>
-                    </select>
+              
+                {uiState.isSubmitting && (
+                  <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-2xl z-10 flex items-center justify-center">
+                    <Loading />
                   </div>
+                )}
+
+                <div className="relative">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Notice Category</label>
-                    <div className="flex gap-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Notice Title <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={formData.noticeTitle}
+                      onChange={(e) => updateForm('noticeTitle', e.target.value)}
+                      placeholder="Enter notice title"
+                      disabled={uiState.isSubmitting}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 disabled:opacity-50"
+                    />
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Notice Content <span className="text-red-500">*</span></label>
+                    <textarea
+                      value={formData.noticeContent}
+                      onChange={(e) => updateForm('noticeContent', e.target.value)}
+                      rows="5"
+                      placeholder="Write the notice content here..."
+                      disabled={uiState.isSubmitting}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 resize-none disabled:opacity-50"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
                       <select
-                        value={formData.noticeType}
-                        onChange={(e) => {
-                          updateForm('noticeType', e.target.value);
-                          setUiState(prev => ({ ...prev, showCustomInput: false }));
-                          updateForm('customCategory', '');
-                        }}
-                        className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none"
+                        value={formData.priority}
+                        onChange={(e) => updateForm('priority', e.target.value)}
+                        disabled={uiState.isSubmitting}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none disabled:opacity-50"
                       >
-                        {noticeCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                        <option value="low">Low Priority</option>
+                        <option value="medium">Medium Priority</option>
+                        <option value="high">High Priority</option>
                       </select>
-                      <button
-                        type="button"
-                        onClick={() => setUiState(prev => ({ ...prev, showCustomInput: !prev.showCustomInput }))}
-                        className="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50"
-                      >
-                        <Plus className="w-5 h-5" />
-                      </button>
                     </div>
-                    {uiState.showCustomInput && (
-                      <input
-                        type="text"
-                        value={formData.customCategory}
-                        onChange={(e) => updateForm('customCategory', e.target.value)}
-                        placeholder="Enter custom category"
-                        className="mt-2 w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none"
-                      />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Notice Category</label>
+                      <div className="flex gap-2">
+                        <select
+                          value={formData.noticeType}
+                          onChange={(e) => {
+                            updateForm('noticeType', e.target.value);
+                            setUiState(prev => ({ ...prev, showCustomInput: false }));
+                            updateForm('customCategory', '');
+                          }}
+                          disabled={uiState.isSubmitting}
+                          className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none disabled:opacity-50"
+                        >
+                          {noticeCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => setUiState(prev => ({ ...prev, showCustomInput: !prev.showCustomInput }))}
+                          disabled={uiState.isSubmitting}
+                          className="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          <Plus className="w-5 h-5" />
+                        </button>
+                      </div>
+                      {uiState.showCustomInput && (
+                        <input
+                          type="text"
+                          value={formData.customCategory}
+                          onChange={(e) => updateForm('customCategory', e.target.value)}
+                          placeholder="Enter custom category"
+                          disabled={uiState.isSubmitting}
+                          className="mt-2 w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-indigo-400 focus:outline-none disabled:opacity-50"
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Target Audience <span className="text-red-500">*</span></label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {roles.map(role => (
+                        <button
+                          key={role.id}
+                          type="button"
+                          onClick={() => handleRoleToggle(role.id)}
+                          disabled={uiState.isSubmitting}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all disabled:opacity-50 ${
+                            formData.selectedRoles.includes(role.id)
+                              ? `bg-gradient-to-r ${role.color} text-white border-transparent shadow-md`
+                              : 'bg-white text-gray-700 border-gray-200 hover:border-indigo-300'
+                          }`}
+                        >
+                          <role.icon className="w-4 h-4" />
+                          <span className="text-sm font-medium">{role.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Attachments (Images will be uploaded to Cloudinary)</label>
+                    <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-indigo-300 transition">
+                      <input type="file" multiple onChange={handleFileChange} className="hidden" id="fileUpload" disabled={uiState.isSubmitting} />
+                      <label htmlFor="fileUpload" className="cursor-pointer disabled:opacity-50">
+                        <Paperclip className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-500">Click to upload or drag and drop</p>
+                        <p className="text-xs text-gray-400">PDF, DOC, JPG, PNG (Max 10MB)</p>
+                      </label>
+                    </div>
+                    
+                    {uploadLoading && (
+                      <div className="mt-2 flex items-center gap-2 text-sm text-indigo-600">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Uploading images to Cloudinary...
+                      </div>
+                    )}
+                    
+                    {uploadError && (
+                      <div className="mt-2 text-sm text-red-600">{uploadError}</div>
+                    )}
+                    
+                    {formData.imageUrls.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        <p className="text-sm font-medium text-gray-700">Uploaded Images:</p>
+                        {formData.imageUrls.map((url, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <img src={url} alt="uploaded" className="w-10 h-10 object-cover rounded" />
+                              <span className="text-sm text-gray-600 truncate max-w-[200px]">{url}</span>
+                            </div>
+                            <button onClick={() => removeImageUrl(idx)} disabled={uiState.isSubmitting} className="text-red-500">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {formData.attachments.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        <p className="text-sm font-medium text-gray-700">Other Attachments:</p>
+                        {formData.attachments.map((file, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <FileText className="w-4 h-4 text-indigo-500" />
+                              <span className="text-sm text-gray-600">{file.name}</span>
+                            </div>
+                            <button onClick={() => removeAttachment(idx)} disabled={uiState.isSubmitting} className="text-red-500">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Target Audience <span className="text-red-500">*</span></label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {roles.map(role => (
-                      <button
-                        key={role.id}
-                        type="button"
-                        onClick={() => handleRoleToggle(role.id)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all ${
-                          formData.selectedRoles.includes(role.id)
-                            ? `bg-gradient-to-r ${role.color} text-white border-transparent shadow-md`
-                            : 'bg-white text-gray-700 border-gray-200 hover:border-indigo-300'
-                        }`}
-                      >
-                        <role.icon className="w-4 h-4" />
-                        <span className="text-sm font-medium">{role.name}</span>
-                      </button>
-                    ))}
+                  <div className="flex gap-3 pt-4">
+                    <button onClick={handlePreview} disabled={uiState.isSubmitting} className="px-6 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50">
+                      <Eye className="w-4 h-4 inline mr-2" /> Preview
+                    </button>
+                    <button onClick={handleSubmit} disabled={uiState.isSubmitting || uploadLoading} className="flex-1 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium hover:shadow-lg disabled:opacity-70">
+                      {uiState.isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : <><Send className="w-4 h-4 inline mr-2" /> Publish Notice</>}
+                    </button>
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Attachments (Images will be uploaded to Cloudinary)</label>
-                  <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-indigo-300 transition">
-                    <input type="file" multiple onChange={handleFileChange} className="hidden" id="fileUpload" />
-                    <label htmlFor="fileUpload" className="cursor-pointer">
-                      <Paperclip className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-500">Click to upload or drag and drop</p>
-                      <p className="text-xs text-gray-400">PDF, DOC, JPG, PNG (Max 10MB)</p>
-                    </label>
-                  </div>
-                  
-                  {uploadLoading && (
-                    <div className="mt-2 flex items-center gap-2 text-sm text-indigo-600">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Uploading images to Cloudinary...
-                    </div>
-                  )}
-                  
-                  {uploadError && (
-                    <div className="mt-2 text-sm text-red-600">{uploadError}</div>
-                  )}
-                  
-                  {formData.imageUrls.length > 0 && (
-                    <div className="mt-3 space-y-2">
-                      <p className="text-sm font-medium text-gray-700">Uploaded Images:</p>
-                      {formData.imageUrls.map((url, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <img src={url} alt="uploaded" className="w-10 h-10 object-cover rounded" />
-                            <span className="text-sm text-gray-600 truncate max-w-[200px]">{url}</span>
-                          </div>
-                          <button onClick={() => removeImageUrl(idx)} className="text-red-500">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {formData.attachments.length > 0 && (
-                    <div className="mt-3 space-y-2">
-                      <p className="text-sm font-medium text-gray-700">Other Attachments:</p>
-                      {formData.attachments.map((file, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-indigo-500" />
-                            <span className="text-sm text-gray-600">{file.name}</span>
-                          </div>
-                          <button onClick={() => removeAttachment(idx)} className="text-red-500">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <button onClick={handlePreview} className="px-6 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50">
-                    <Eye className="w-4 h-4 inline mr-2" /> Preview
-                  </button>
-                  <button onClick={handleSubmit} disabled={uiState.isSubmitting || uploadLoading} className="flex-1 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium hover:shadow-lg disabled:opacity-70">
-                    {uiState.isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : <><Send className="w-4 h-4 inline mr-2" /> Publish Notice</>}
-                  </button>
                 </div>
               </div>
             </div>
 
-            {uiState.showPreview && (
+            {uiState.showPreview && !uiState.isSubmitting && (
               <div className="bg-white rounded-2xl shadow-xl border mt-6">
                 <div className="px-6 py-4 border-b bg-gray-50">
                   <h3 className="font-semibold text-gray-800">Preview</h3>
@@ -447,7 +437,11 @@ const UploadNotice = () => {
               </div>
               <div className="p-4 space-y-3 max-h-[500px] overflow-y-auto">
                 {roles.map(role => (
-                  <div key={role.id} className={`flex items-start gap-3 p-3 rounded-xl transition-all cursor-pointer ${formData.selectedRoles.includes(role.id) ? `bg-gradient-to-r ${role.color} bg-opacity-10 border ${role.color.replace('from-', 'border-').replace('to-', '')}` : 'hover:bg-gray-50'}`} onClick={() => handleRoleToggle(role.id)}>
+                  <div 
+                    key={role.id} 
+                    className={`flex items-start gap-3 p-3 rounded-xl transition-all cursor-pointer ${formData.selectedRoles.includes(role.id) ? `bg-gradient-to-r ${role.color} bg-opacity-10 border ${role.color.replace('from-', 'border-').replace('to-', '')}` : 'hover:bg-gray-50'}`} 
+                    onClick={() => !uiState.isSubmitting && handleRoleToggle(role.id)}
+                  >
                     <div className={`w-10 h-10 bg-gradient-to-r ${role.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
                       <role.icon className="w-5 h-5 text-white" />
                     </div>

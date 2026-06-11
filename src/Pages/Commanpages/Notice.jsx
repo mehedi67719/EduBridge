@@ -48,10 +48,6 @@ const Notice = () => {
     getData();
   }, []);
 
-  if (loading) {
-    return <Loading />;
-  }
-
   const notices = noticesData;
 
   const categories = [
@@ -155,7 +151,7 @@ const Notice = () => {
   });
 
   const pinnedNotices = filteredNotices.filter(
-    (notice) => notice.pinned === true
+    (notice) => notice.pinned === true,
   );
   const normalNotices = filteredNotices.filter((notice) => !notice.pinned);
 
@@ -184,7 +180,6 @@ const Notice = () => {
 
       <div className="container mx-auto px-4 py-8 lg:py-12">
         <div className="flex flex-col lg:flex-row gap-8">
-      
           <div className="lg:w-80 flex-shrink-0">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 sticky top-24 border border-white/50">
               <div className="flex items-center gap-2 mb-6 pb-3 border-b border-gray-200">
@@ -263,7 +258,6 @@ const Notice = () => {
             </div>
           </div>
 
-    
           <div className="flex-1">
             <div className="mb-8">
               <div className="relative group">
@@ -278,172 +272,180 @@ const Notice = () => {
               </div>
             </div>
 
-
-            {pinnedNotices.length > 0 && (
-              <div className="mb-10">
-                <div className="flex items-center gap-2 mb-5">
-                  <div className="w-7 h-7 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg flex items-center justify-center">
-                    <Pin className="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <h2 className="font-bold text-gray-800">Pinned Notices</h2>
-                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                    Important
-                  </span>
-                </div>
-                <div className="grid gap-6">
-                  {pinnedNotices.map((notice) => (
-                    <div
-                      key={notice._id}
-                      className="group relative bg-gradient-to-r from-amber-50/80 via-yellow-50/80 to-orange-50/80 rounded-2xl p-6 border-l-4 border-amber-500 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-[1.01]"
-                    >
-                      <div className="absolute top-4 right-4 flex items-center gap-2">
-                        <button className="p-1.5 rounded-lg bg-white/50 hover:bg-white transition-colors">
-                          <Bookmark className="w-3.5 h-3.5 text-gray-500" />
-                        </button>
-                        <button className="p-1.5 rounded-lg bg-white/50 hover:bg-white transition-colors">
-                          <Share2 className="w-3.5 h-3.5 text-gray-500" />
-                        </button>
+            {loading ? (
+              <Loading />
+            ) : (
+              <div>
+                {pinnedNotices.length > 0 && (
+                  <div className="mb-10">
+                    <div className="flex items-center gap-2 mb-5">
+                      <div className="w-7 h-7 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg flex items-center justify-center">
+                        <Pin className="w-3.5 h-3.5 text-white" />
                       </div>
-                      <div className="flex items-start gap-4 flex-wrap">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 flex-wrap mb-3">
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-medium shadow-sm ${getPriorityStyle(notice.priority)}`}
-                            >
-                              {notice.priority === "high"
-                                ? "High Priority"
-                                : notice.priority === "medium"
-                                ? "Medium Priority"
-                                : notice.priority === "low"
-                                ? "Low Priority"
-                                : "Normal"}
-                            </span>
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${getCategoryColor(notice.category)} text-white shadow-sm`}
-                            >
-                              {notice.category
-                                ? notice.category.charAt(0).toUpperCase() +
-                                  notice.category.slice(1)
-                                : "General"}
-                            </span>
+                      <h2 className="font-bold text-gray-800">
+                        Pinned Notices
+                      </h2>
+                      <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                        Important
+                      </span>
+                    </div>
+                    <div className="grid gap-6">
+                      {pinnedNotices.map((notice) => (
+                        <div
+                          key={notice._id}
+                          className="group relative bg-gradient-to-r from-amber-50/80 via-yellow-50/80 to-orange-50/80 rounded-2xl p-6 border-l-4 border-amber-500 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-[1.01]"
+                        >
+                          <div className="absolute top-4 right-4 flex items-center gap-2">
+                            <button className="p-1.5 rounded-lg bg-white/50 hover:bg-white transition-colors">
+                              <Bookmark className="w-3.5 h-3.5 text-gray-500" />
+                            </button>
+                            <button className="p-1.5 rounded-lg bg-white/50 hover:bg-white transition-colors">
+                              <Share2 className="w-3.5 h-3.5 text-gray-500" />
+                            </button>
                           </div>
-                          <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-amber-700 transition-colors">
-                            {notice.title}
-                          </h3>
-                          <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                            {notice.description}
-                          </p>
-                          <div className="flex items-center gap-5 text-xs flex-wrap">
-                            <span className="flex items-center gap-1.5 text-gray-500">
-                              <Calendar className="w-3.5 h-3.5" />
-                              {formatDate(notice.date)}
-                            </span>
-                            <span className="flex items-center gap-1.5 text-gray-500">
-                              <User className="w-3.5 h-3.5" />
-                              {notice.postedBy || "Administration"}
-                            </span>
-                            {notice.postTime && (
-                              <span className="flex items-center gap-1.5 text-gray-500">
-                                <Clock className="w-3.5 h-3.5" />
-                                {notice.postTime}
-                              </span>
-                            )}
+                          <div className="flex items-start gap-4 flex-wrap">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 flex-wrap mb-3">
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-medium shadow-sm ${getPriorityStyle(notice.priority)}`}
+                                >
+                                  {notice.priority === "high"
+                                    ? "High Priority"
+                                    : notice.priority === "medium"
+                                      ? "Medium Priority"
+                                      : notice.priority === "low"
+                                        ? "Low Priority"
+                                        : "Normal"}
+                                </span>
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${getCategoryColor(notice.category)} text-white shadow-sm`}
+                                >
+                                  {notice.category
+                                    ? notice.category.charAt(0).toUpperCase() +
+                                      notice.category.slice(1)
+                                    : "General"}
+                                </span>
+                              </div>
+                              <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-amber-700 transition-colors">
+                                {notice.title}
+                              </h3>
+                              <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                                {notice.description}
+                              </p>
+                              <div className="flex items-center gap-5 text-xs flex-wrap">
+                                <span className="flex items-center gap-1.5 text-gray-500">
+                                  <Calendar className="w-3.5 h-3.5" />
+                                  {formatDate(notice.date)}
+                                </span>
+                                <span className="flex items-center gap-1.5 text-gray-500">
+                                  <User className="w-3.5 h-3.5" />
+                                  {notice.postedBy || "Administration"}
+                                </span>
+                                {notice.postTime && (
+                                  <span className="flex items-center gap-1.5 text-gray-500">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    {notice.postTime}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-amber-600 font-medium text-sm hover:bg-amber-500 hover:text-white transition-all duration-300 shadow-sm">
+                              Read More <ChevronRight className="w-4 h-4" />
+                            </button>
                           </div>
                         </div>
-                        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-amber-600 font-medium text-sm hover:bg-amber-500 hover:text-white transition-all duration-300 shadow-sm">
-                          Read More <ChevronRight className="w-4 h-4" />
-                        </button>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+                )}
+
+                <div>
+                  <div className="flex items-center gap-2 mb-5">
+                    <div className="w-7 h-7 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                      <Bell className="w-3.5 h-3.5 text-white" />
+                    </div>
+                    <h2 className="font-bold text-gray-800">All Notices</h2>
+                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                      {normalNotices.length} notices
+                    </span>
+                  </div>
+
+                  {normalNotices.length > 0 ? (
+                    <div className="grid gap-5">
+                      {normalNotices.map((notice) => (
+                        <div
+                          key={notice._id}
+                          className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-purple-200 hover:scale-[1.01]"
+                        >
+                          <div className="flex items-start justify-between flex-wrap gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 flex-wrap mb-3">
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-medium shadow-sm ${getPriorityStyle(notice.priority)}`}
+                                >
+                                  {notice.priority === "high"
+                                    ? "High"
+                                    : notice.priority === "medium"
+                                      ? "Medium"
+                                      : notice.priority === "low"
+                                        ? "Low"
+                                        : "Normal"}
+                                </span>
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${getCategoryColor(notice.category)} text-white shadow-sm`}
+                                >
+                                  {notice.category
+                                    ? notice.category.charAt(0).toUpperCase() +
+                                      notice.category.slice(1)
+                                    : "General"}
+                                </span>
+                              </div>
+                              <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors cursor-pointer">
+                                {notice.title}
+                              </h3>
+                              <p className="text-gray-500 text-sm mb-3 leading-relaxed line-clamp-2">
+                                {notice.description}
+                              </p>
+                              <div className="flex items-center gap-5 text-xs flex-wrap">
+                                <span className="flex items-center gap-1.5 text-gray-400">
+                                  <Calendar className="w-3.5 h-3.5" />
+                                  {formatDate(notice.date)}
+                                </span>
+                                <span className="flex items-center gap-1.5 text-gray-400">
+                                  <User className="w-3.5 h-3.5" />
+                                  {notice.postedBy || "Administration"}
+                                </span>
+                                {notice.postTime && (
+                                  <span className="flex items-center gap-1.5 text-gray-400">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    {notice.postTime}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 text-purple-600 font-medium text-sm hover:from-purple-600 hover:to-pink-600 hover:text-white transition-all duration-300 shadow-sm">
+                              Read More <ChevronRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-2xl p-16 text-center shadow-lg border border-gray-100">
+                      <div className="w-20 h-20 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <AlertCircle className="w-10 h-10 text-gray-300" />
+                      </div>
+                      <p className="text-gray-400 font-medium">
+                        No notices found
+                      </p>
+                      <p className="text-gray-300 text-sm mt-1">
+                        Try adjusting your search or category filter
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
-
-            {/* All Notices */}
-            <div>
-              <div className="flex items-center gap-2 mb-5">
-                <div className="w-7 h-7 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                  <Bell className="w-3.5 h-3.5 text-white" />
-                </div>
-                <h2 className="font-bold text-gray-800">All Notices</h2>
-                <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
-                  {normalNotices.length} notices
-                </span>
-              </div>
-
-              {normalNotices.length > 0 ? (
-                <div className="grid gap-5">
-                  {normalNotices.map((notice) => (
-                    <div
-                      key={notice._id}
-                      className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-purple-200 hover:scale-[1.01]"
-                    >
-                      <div className="flex items-start justify-between flex-wrap gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 flex-wrap mb-3">
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-medium shadow-sm ${getPriorityStyle(notice.priority)}`}
-                            >
-                              {notice.priority === "high"
-                                ? "High"
-                                : notice.priority === "medium"
-                                ? "Medium"
-                                : notice.priority === "low"
-                                ? "Low"
-                                : "Normal"}
-                            </span>
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${getCategoryColor(notice.category)} text-white shadow-sm`}
-                            >
-                              {notice.category
-                                ? notice.category.charAt(0).toUpperCase() +
-                                  notice.category.slice(1)
-                                : "General"}
-                            </span>
-                          </div>
-                          <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors cursor-pointer">
-                            {notice.title}
-                          </h3>
-                          <p className="text-gray-500 text-sm mb-3 leading-relaxed line-clamp-2">
-                            {notice.description}
-                          </p>
-                          <div className="flex items-center gap-5 text-xs flex-wrap">
-                            <span className="flex items-center gap-1.5 text-gray-400">
-                              <Calendar className="w-3.5 h-3.5" />
-                              {formatDate(notice.date)}
-                            </span>
-                            <span className="flex items-center gap-1.5 text-gray-400">
-                              <User className="w-3.5 h-3.5" />
-                              {notice.postedBy || "Administration"}
-                            </span>
-                            {notice.postTime && (
-                              <span className="flex items-center gap-1.5 text-gray-400">
-                                <Clock className="w-3.5 h-3.5" />
-                                {notice.postTime}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 text-purple-600 font-medium text-sm hover:from-purple-600 hover:to-pink-600 hover:text-white transition-all duration-300 shadow-sm">
-                          Read More <ChevronRight className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="bg-white rounded-2xl p-16 text-center shadow-lg border border-gray-100">
-                  <div className="w-20 h-20 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <AlertCircle className="w-10 h-10 text-gray-300" />
-                  </div>
-                  <p className="text-gray-400 font-medium">No notices found</p>
-                  <p className="text-gray-300 text-sm mt-1">
-                    Try adjusting your search or category filter
-                  </p>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
