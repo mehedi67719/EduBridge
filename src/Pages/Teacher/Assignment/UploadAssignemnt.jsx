@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import {
   Upload,
@@ -36,7 +36,7 @@ import Loading from "../../../Components/Loading";
 
 const UploadAssignment = () => {
   const { dbUser, loading: authLoading } = Useauth();
-  const { uploadImage, loading: uploadLoading, error: uploadError } = useCloudinaryUpload();
+  const { uploadImage, loading: uploadLoading } = useCloudinaryUpload();
 
   const { register, control, handleSubmit, watch, setValue, getValues, reset, formState: { isSubmitting } } = useForm({
     defaultValues: {

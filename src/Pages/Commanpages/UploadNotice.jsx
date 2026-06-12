@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import {
   Upload,
   Send,
@@ -234,7 +234,7 @@ const UploadNotice = () => {
         });
         setUiState((prev) => ({ ...prev, isSubmitting: false }));
       }
-    } catch (error) {
+    } catch  {
       Swal.fire({
         title: "Error!",
         text: "Something went wrong! Please try again.",

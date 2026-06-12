@@ -13,27 +13,24 @@ import {
   Bell,
   CheckCircle,
   Plus,
-  Trash2,
   Loader2,
   Calendar,
   Globe,
   Lock,
   Key,
-  Edit2,
   X,
   Clock,
   MapPin,
   User,
   School,
   Copy,
-  Check,
   Sun,
-  Moon,
   ChevronDown
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import Useauth from '../../Hooks/Useauth';
 import Loading from '../../Components/Loading';
+import { upoladroutine } from '../../API/Routine/Uploadroutine';
 
 const UploadRoutine = () => {
   const { dbUser, loading: authLoading } = Useauth();
@@ -111,7 +108,7 @@ const UploadRoutine = () => {
     '2028-2029'
   ];
 
-  const classTypes = ['Theory', 'Lab', 'Practical', 'Tutorial', 'Break', 'Holiday'];
+  const classTypes = ['Theory', 'Lab', 'Practical', 'Tutorial', 'Break'];
   const days = [
     { id: 'Monday', label: 'Monday', icon: Sun },
     { id: 'Tuesday', label: 'Tuesday', icon: Sun },
@@ -253,19 +250,54 @@ const UploadRoutine = () => {
       status: 'published'
     };
 
-    console.log('========== ROUTINE SUBMITTED ==========');
-    console.log(JSON.stringify(finalData, null, 2));
-    console.log('=======================================');
-
-    Swal.fire({
-      title: 'Success!',
-      text: 'Routine uploaded successfully!',
-      icon: 'success',
-      confirmButtonColor: '#6366f1',
-      timer: 3000
-    });
-    reset();
-    setUiState(prev => ({ ...prev, showCustomDeptInput: false, showCustomYearInput: false, showCustomTimeInput: false }));
+    try {
+      const result = await upoladroutine(finalData);
+      
+      if (result && result.success) {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Routine uploaded successfully!',
+          icon: 'success',
+          confirmButtonColor: '#6366f1',
+          timer: 3000
+        });
+        reset();
+        setValue('weeklyRoutine', {
+          Monday: [],
+          Tuesday: [],
+          Wednesday: [],
+          Thursday: [],
+          Friday: [],
+          Saturday: []
+        });
+        setValue('timeSlots', [
+          { id: '1', start: '09:00', end: '10:30', label: '09:00 AM - 10:30 AM' },
+          { id: '2', start: '10:30', end: '12:00', label: '10:30 AM - 12:00 PM' },
+          { id: '3', start: '12:00', end: '13:00', label: '12:00 PM - 01:00 PM' },
+          { id: '4', start: '13:00', end: '14:30', label: '01:00 PM - 02:30 PM' },
+          { id: '5', start: '14:30', end: '16:00', label: '02:30 PM - 04:00 PM' }
+        ]);
+        setValue('selectedRoles', []);
+        setValue('holidayDays', []);
+        setUiState(prev => ({ 
+          ...prev, 
+          showCustomDeptInput: false, 
+          showCustomYearInput: false, 
+          showCustomTimeInput: false,
+          showPreview: false 
+        }));
+      } else {
+        throw new Error(result?.message || 'Failed to upload routine');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      Swal.fire({ 
+        title: 'Error!', 
+        text: error.message || 'Something went wrong! Please try again.', 
+        icon: 'error', 
+        confirmButtonColor: '#6366f1' 
+      });
+    }
   };
 
   if (authLoading) {
@@ -386,7 +418,7 @@ const UploadRoutine = () => {
                           onClick={() => {
                             setUiState(prev => ({ ...prev, showCustomDeptInput: false }));
                             setValue('customDepartment', '');
-                            if (watchDepartment === 'other') setValue('department', '');
+                            setValue('department', '');
                           }} 
                           className="px-3 py-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-all"
                         >
@@ -437,7 +469,7 @@ const UploadRoutine = () => {
                           onClick={() => {
                             setUiState(prev => ({ ...prev, showCustomYearInput: false }));
                             setValue('customAcademicYear', '');
-                            if (watchAcademicYear === 'other') setValue('academicYear', '');
+                            setValue('academicYear', '');
                           }} 
                           className="px-3 py-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-all"
                         >
@@ -480,7 +512,6 @@ const UploadRoutine = () => {
                 </div>
               </div>
 
-              {/* Time Slots Management */}
               <div>
                 <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                   <label className="block text-sm font-medium text-gray-700">Time Slots</label>
@@ -515,7 +546,6 @@ const UploadRoutine = () => {
                 </div>
               </div>
 
-              {/* Days with Holiday Toggle and Copy Feature */}
               <div className="overflow-x-auto rounded-lg border border-gray-200">
                 <table className="w-full min-w-[1000px]">
                   <thead>
@@ -575,7 +605,7 @@ const UploadRoutine = () => {
                                       onChange={(e) => updateSlotValue(day.id, slotIndex, 'type', e.target.value)}
                                       className="w-16 px-1 py-1.5 text-xs rounded-lg border border-gray-200 focus:border-indigo-400 focus:outline-none"
                                     >
-                                      {classTypes.filter(t => t !== 'Holiday').map(type => <option key={type} value={type}>{type}</option>)}
+                                      {classTypes.map(type => <option key={type} value={type}>{type}</option>)}
                                     </select>
                                   </div>
                                 </div>
@@ -605,7 +635,6 @@ const UploadRoutine = () => {
                 </table>
               </div>
 
-              {/* Copy Modal */}
               {uiState.showCopyModal && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
                   <div className="bg-white rounded-xl p-5 max-w-md w-full mx-4">
