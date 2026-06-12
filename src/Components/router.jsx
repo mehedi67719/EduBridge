@@ -1,4 +1,3 @@
-
 import Root from "./Root";
 import Home from "../Pages/Commanpages/Home";
 import { createBrowserRouter } from "react-router";
@@ -14,7 +13,6 @@ import UploadAssignemnt from "../Pages/Teacher/UploadAssignemnt";
 import DashboardRoot from "./DashboardRoot";
 import DashboardHome from "../Pages/Dashboard/DashboardHome";
 
-
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -25,53 +23,53 @@ export const router = createBrowserRouter([
         Component: Home,
       },
       {
-        path:"/notice",
-        Component:Notice
+        path: "/notice",
+        Component: Notice,
       },
       {
-        path:"/routine",
-        Component:Routine
+        path: "/routine",
+        Component: Routine,
       },
       {
-        path:'/assignment',
-        Component:Assignment
+        path: "/assignment",
+        Component: Assignment,
       },
-  
+
       {
-        path:'/results',
-        Component:Results
-      },
-      {
-        path:"/chat",
-        Component:Chat
-      },
-     
-      {
-        path:"/login",
-        Component:Login
+        path: "/results",
+        Component: Results,
       },
       {
-        path:"/register",
-        Component:Register
+        path: "/chat",
+        Component: Chat,
+      },
+
+      {
+        path: "/login",
+        Component: Login,
       },
       {
-        path:'/upload-notice',
-        Component:UploadNotice
+        path: "/register",
+        Component: Register,
       },
-      {
-        path:"/upload-asssignment",
-        Component:UploadAssignemnt
-      }
     ],
   },
   {
-    path:"/dashboard",
-    Component:DashboardRoot,
-    children:[
+    path: "/dashboard",
+    Component: DashboardRoot,
+    children: [
       {
-        index:true,
-        Component:DashboardHome
-      }
-    ]
-  }
+        index: true,
+        Component: DashboardHome,
+      },
+      {
+        path: "/dashboard/upload-notice",
+        Component: UploadNotice,
+      },
+      {
+        path: "/dashboard/upload-assignment",
+        Component: UploadAssignemnt,
+      },
+    ],
+  },
 ]);

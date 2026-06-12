@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   LayoutDashboard,
   UserCircle,
@@ -19,29 +19,34 @@ import {
   TrendingUp,
   ChevronRight
 } from "lucide-react";
+import { useNavigate, useLocation } from "react-router";
 import Useauth from "../../Hooks/Useauth";
 import Loading from "../../Components/Loading";
-
+import Logo from "../../Components/Logo";
 
 const Sidebar = ({ isOpen = true, device = "desktop", activeTab, setActiveTab, closeSidebar }) => {
   const { dbUser, loading } = Useauth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const mainMenuItems = [
-    { id: "overview", icon: LayoutDashboard, label: "Overview", badge: null },
-    { id: "subjects", icon: BookOpen, label: "Subjects", badge: "8" },
-    { id: "assignments", icon: FileText, label: "Assignments", badge: "3" },
-    { id: "attendance", icon: CheckSquare, label: "Attendance", badge: "85%" },
-    { id: "results", icon: Award, label: "Results", badge: "3.75" },
-    { id: "schedule", icon: Calendar, label: "Schedule", badge: null },
-    { id: "messages", icon: MessageCircle, label: "Messages", badge: "2" },
-    { id: "notices", icon: Bell, label: "Notices", badge: "3" },
+    { id: "overview", icon: LayoutDashboard, label: "Overview", badge: null, path: "/dashboard" },
+    { id: "subjects", icon: BookOpen, label: "Subjects", badge: "8", path: "/dashboard/subjects" },
+    { id: "uploadNotice", icon: Bell, label: "Upload Notice", badge: null, path: "/dashboard/upload-notice" },
+    { id: "uploadAssignment", icon: FileText, label: "Upload Assignment", badge: null, path: "/dashboard/upload-assignment" },
+    { id: "assignments", icon: FileText, label: "Assignments", badge: "3", path: "/dashboard/assignments" },
+    { id: "attendance", icon: CheckSquare, label: "Attendance", badge: "85%", path: "/dashboard/attendance" },
+    { id: "results", icon: Award, label: "Results", badge: "3.75", path: "/dashboard/results" },
+    { id: "schedule", icon: Calendar, label: "Schedule", badge: null, path: "/dashboard/schedule" },
+    { id: "messages", icon: MessageCircle, label: "Messages", badge: "2", path: "/dashboard/messages" },
+    { id: "notices", icon: Bell, label: "Notices", badge: "3", path: "/dashboard/notices" },
   ];
 
   const accountMenuItems = [
-    { id: "myprofile", icon: UserCircle, label: "My Profile" },
-    { id: "settings", icon: Settings, label: "Settings" },
-    { id: "help", icon: HelpCircle, label: "Help Center" },
-    { id: "privacy", icon: Shield, label: "Privacy" },
+    { id: "myprofile", icon: UserCircle, label: "My Profile", path: "/dashboard/profile" },
+    { id: "settings", icon: Settings, label: "Settings", path: "/dashboard/settings" },
+    { id: "help", icon: HelpCircle, label: "Help Center", path: "/dashboard/help" },
+    { id: "privacy", icon: Shield, label: "Privacy", path: "/dashboard/privacy" },
   ];
 
   const quickStats = [
@@ -62,6 +67,24 @@ const Sidebar = ({ isOpen = true, device = "desktop", activeTab, setActiveTab, c
   const showText = isDesktop || isMobile;
   const sidebarWidth = isMobile ? "w-72" : "w-64 lg:w-72";
 
+  // Get active tab based on current path
+  const getActiveTabFromPath = () => {
+    const currentPath = location.pathname;
+    const foundItem = mainMenuItems.find(item => item.path === currentPath);
+    if (foundItem) return foundItem.id;
+    const foundAccountItem = accountMenuItems.find(item => item.path === currentPath);
+    if (foundAccountItem) return foundAccountItem.id;
+    return "overview";
+  };
+
+  const currentActiveTab = getActiveTabFromPath();
+
+  const handleNavigation = (path, id) => {
+    setActiveTab(id);
+    navigate(path);
+    if (isMobile) closeSidebar();
+  };
+
   if (loading) {
     return (
       <div className={`h-full ${sidebarWidth} flex items-center justify-center`}>
@@ -81,14 +104,7 @@ const Sidebar = ({ isOpen = true, device = "desktop", activeTab, setActiveTab, c
                 <div className="absolute inset-0 bg-amber-400 rounded-full blur-lg opacity-50"></div>
                 <GraduationCap className="w-7 h-7 lg:w-9 lg:h-9 text-amber-400 relative z-10" />
               </div>
-              {showText && (
-                <div className="leading-tight">
-                  <h1 className="text-lg lg:text-xl font-bold bg-gradient-to-r from-white to-amber-200 bg-clip-text text-transparent">
-                    EduBridge
-                  </h1>
-                  <p className="text-[10px] lg:text-xs text-white/50">Smart Campus System</p>
-                </div>
-              )}
+              {showText && <Logo />}
             </div>
 
             {isMobile && (
@@ -115,11 +131,13 @@ const Sidebar = ({ isOpen = true, device = "desktop", activeTab, setActiveTab, c
                     {dbUser?.fullName || dbUser?.email?.split("@")[0] || "User"}
                   </p>
                   <p className="text-[10px] lg:text-xs text-white/60 truncate">
-                    {dbUser?.userType || "Student"}
+                    {dbUser?.userType || "Student"} • {dbUser?.institutionName || ""}
                   </p>
                   <div className="flex items-center gap-1 mt-1">
                     <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-                    <span className="text-[10px] text-white/70">CGPA: 3.75</span>
+                    <span className="text-[10px] text-white/70">
+                      {dbUser?.department ? `${dbUser.department}` : "CSE"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -158,12 +176,9 @@ const Sidebar = ({ isOpen = true, device = "desktop", activeTab, setActiveTab, c
               {mainMenuItems.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    if (isMobile) closeSidebar();
-                  }}
+                  onClick={() => handleNavigation(item.path, item.id)}
                   className={`group w-full flex items-center gap-3 rounded-lg transition-all duration-300 px-3 py-2.5 ${
-                    activeTab === item.id
+                    currentActiveTab === item.id
                       ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg"
                       : "text-white/70 hover:bg-white/10 hover:text-white"
                   }`}
@@ -197,12 +212,9 @@ const Sidebar = ({ isOpen = true, device = "desktop", activeTab, setActiveTab, c
               {accountMenuItems.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    if (isMobile) closeSidebar();
-                  }}
+                  onClick={() => handleNavigation(item.path, item.id)}
                   className={`group w-full flex items-center gap-3 rounded-lg transition-all duration-300 px-3 py-2.5 ${
-                    activeTab === item.id
+                    currentActiveTab === item.id
                       ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg"
                       : "text-white/70 hover:bg-white/10 hover:text-white"
                   }`}
@@ -224,7 +236,8 @@ const Sidebar = ({ isOpen = true, device = "desktop", activeTab, setActiveTab, c
             className="group w-full flex items-center gap-3 rounded-lg transition-all duration-300 px-3 py-2.5 text-white/70 hover:bg-red-500/20 hover:text-red-400"
             onClick={() => {
               localStorage.removeItem("token");
-              window.location.href = "/login";
+              navigate("/login");
+              if (isMobile) closeSidebar();
             }}
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
