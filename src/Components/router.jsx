@@ -9,11 +9,12 @@ import Chat from "../Pages/Commanpages/Chat";
 import Login from "../Pages/Login";
 import Register from "../Pages/Register";
 import UploadNotice from "../Pages/Commanpages/UploadNotice";
-import UploadAssignemnt from "../Pages/Teacher/UploadAssignemnt";
 import DashboardRoot from "./DashboardRoot";
 import DashboardHome from "../Pages/Dashboard/DashboardHome";
 import UploadRoutine from "../Pages/Teacher/UploadRoutine";
 import Profile from "../Pages/Commanpages/Profile";
+import Seeting from "../Pages/Commanpages/Seeting";
+import UploadAssignment from "../Pages/Teacher/Assignment/UploadAssignemnt";
 
 export const router = createBrowserRouter([
   {
@@ -70,7 +71,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "/dashboard/upload-assignment",
-        Component: UploadAssignemnt,
+        Component: UploadAssignment,
       },
       {
         path:"/dashboard/upload-routine",
@@ -79,6 +80,10 @@ export const router = createBrowserRouter([
       {
         path:"/dashboard/profile",
         Component:Profile
+      },
+      {
+        path:"/dashboard/settings",
+        Component:Seeting
       }
     ],
   },

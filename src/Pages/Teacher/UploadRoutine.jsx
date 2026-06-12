@@ -28,7 +28,8 @@ import {
   Copy,
   Check,
   Sun,
-  Moon
+  Moon,
+  ChevronDown
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import Useauth from '../../Hooks/Useauth';
@@ -46,6 +47,7 @@ const UploadRoutine = () => {
       department: '',
       customDepartment: '',
       academicYear: '',
+      customAcademicYear: '',
       isPrivate: false,
       secretCode: '',
       timeSlots: [
@@ -70,6 +72,7 @@ const UploadRoutine = () => {
   const [uiState, setUiState] = useState({
     showPreview: false,
     showCustomDeptInput: false,
+    showCustomYearInput: false,
     showCustomTimeInput: false,
     newTimeSlot: { start: '', end: '' },
     copyFromDay: null,
@@ -100,6 +103,14 @@ const UploadRoutine = () => {
     'Chemistry'
   ];
 
+  const academicYears = [
+    '2024-2025',
+    '2025-2026',
+    '2026-2027',
+    '2027-2028',
+    '2028-2029'
+  ];
+
   const classTypes = ['Theory', 'Lab', 'Practical', 'Tutorial', 'Break', 'Holiday'];
   const days = [
     { id: 'Monday', label: 'Monday', icon: Sun },
@@ -114,6 +125,8 @@ const UploadRoutine = () => {
   const watchIsPrivate = watch('isPrivate');
   const watchDepartment = watch('department');
   const watchCustomDepartment = watch('customDepartment');
+  const watchAcademicYear = watch('academicYear');
+  const watchCustomAcademicYear = watch('customAcademicYear');
   const watchWeeklyRoutine = watch('weeklyRoutine');
   const watchTimeSlots = watch('timeSlots');
   const watchHolidayDays = watch('holidayDays');
@@ -139,7 +152,6 @@ const UploadRoutine = () => {
     const updated = currentSlots.filter((_, i) => i !== index);
     setValue('timeSlots', updated);
     
-    // Also remove data from all days for this time slot
     days.forEach(day => {
       const dayRoutine = watchWeeklyRoutine[day.id] || [];
       const updatedRoutine = dayRoutine.filter((_, i) => i !== index);
@@ -167,7 +179,6 @@ const UploadRoutine = () => {
     const updated = current.includes(dayId) ? current.filter(d => d !== dayId) : [...current, dayId];
     setValue('holidayDays', updated);
     
-    // Clear all slots for holiday day
     if (!current.includes(dayId)) {
       const emptySlots = watchTimeSlots.map(() => ({ subject: '', teacher: '', room: '', type: 'Holiday' }));
       setValue(`weeklyRoutine.${dayId}`, emptySlots);
@@ -195,6 +206,11 @@ const UploadRoutine = () => {
     return watchDepartment;
   };
 
+  const getAcademicYearDisplay = () => {
+    if (watchAcademicYear === 'other') return watchCustomAcademicYear || 'Other';
+    return watchAcademicYear;
+  };
+
   const onSubmit = async (data) => {
     if (!data.routineTitle || !data.semester || !data.academicYear) {
       Swal.fire({ title: 'Error!', text: 'Please fill all required fields', icon: 'error', confirmButtonColor: '#6366f1' });
@@ -213,6 +229,7 @@ const UploadRoutine = () => {
 
     const selectedRolesNames = data.selectedRoles.map(roleId => roles.find(r => r.id === roleId)?.name);
     const departmentName = data.department === 'other' ? data.customDepartment : data.department;
+    const academicYearName = data.academicYear === 'other' ? data.customAcademicYear : data.academicYear;
 
     const finalData = {
       routineTitle: data.routineTitle,
@@ -220,7 +237,7 @@ const UploadRoutine = () => {
       targetRoles: selectedRolesNames,
       semester: data.semester,
       department: departmentName,
-      academicYear: data.academicYear,
+      academicYear: academicYearName,
       isPrivate: data.isPrivate,
       secretCode: data.isPrivate ? data.secretCode : null,
       timeSlots: data.timeSlots,
@@ -248,7 +265,7 @@ const UploadRoutine = () => {
       timer: 3000
     });
     reset();
-    setUiState(prev => ({ ...prev, showCustomDeptInput: false, showCustomTimeInput: false }));
+    setUiState(prev => ({ ...prev, showCustomDeptInput: false, showCustomYearInput: false, showCustomTimeInput: false }));
   };
 
   if (authLoading) {
@@ -319,38 +336,117 @@ const UploadRoutine = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Semester <span className="text-red-500">*</span></label>
                   <select {...register('semester', { required: true })} className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-400 focus:outline-none text-base">
                     <option value="">Select Semester</option>
-                    <option>1st Semester</option><option>2nd Semester</option><option>3rd Semester</option>
-                    <option>4th Semester</option><option>5th Semester</option><option>6th Semester</option>
-                    <option>7th Semester</option><option>8th Semester</option>
+                    <option>1st Semester</option>
+                    <option>2nd Semester</option>
+                    <option>3rd Semester</option>
+                    <option>4th Semester</option>
+                    <option>5th Semester</option>
+                    <option>6th Semester</option>
+                    <option>7th Semester</option>
+                    <option>8th Semester</option>
                   </select>
                 </div>
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Department <span className="text-red-500">*</span></label>
-                  <div className="flex gap-2">
-                    <select {...register('department', { required: true })} className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-400 focus:outline-none text-base">
+                  <div className="relative">
+                    <select 
+                      {...register('department', { required: true })} 
+                      className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-400 focus:outline-none text-base appearance-none"
+                      onChange={(e) => {
+                        setValue('department', e.target.value);
+                        if (e.target.value === 'other') {
+                          setUiState(prev => ({ ...prev, showCustomDeptInput: true }));
+                        } else {
+                          setUiState(prev => ({ ...prev, showCustomDeptInput: false }));
+                        }
+                      }}
+                    >
                       <option value="">Select Department</option>
                       {departments.map(dept => <option key={dept} value={dept}>{dept}</option>)}
-                      <option value="other">Other (Manual Entry)</option>
+                      <option value="other">+ Add Custom Department</option>
                     </select>
-                    {watchDepartment === 'other' && (
-                      <button type="button" onClick={() => setUiState(prev => ({ ...prev, showCustomDeptInput: !prev.showCustomDeptInput }))} className="px-3 py-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all">
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                    )}
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <ChevronDown className="h-4 w-4 text-gray-400" />
+                    </div>
                   </div>
+                  
                   {watchDepartment === 'other' && uiState.showCustomDeptInput && (
-                    <div className="mt-2 flex gap-2">
-                      <input {...register('customDepartment')} type="text" placeholder="Enter department name" className="flex-1 px-4 py-2 rounded-lg border border-gray-200 focus:border-indigo-400 focus:outline-none text-base" />
-                      <button type="button" onClick={() => setUiState(prev => ({ ...prev, showCustomDeptInput: false }))} className="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200"><X className="w-4 h-4" /></button>
+                    <div className="mt-2">
+                      <div className="flex gap-2 items-center">
+                        <input 
+                          {...register('customDepartment')} 
+                          type="text" 
+                          placeholder="Enter department name" 
+                          className="flex-1 px-4 py-2 rounded-lg border border-indigo-300 focus:border-indigo-400 focus:outline-none text-base bg-indigo-50" 
+                          autoFocus
+                        />
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            setUiState(prev => ({ ...prev, showCustomDeptInput: false }));
+                            setValue('customDepartment', '');
+                            if (watchDepartment === 'other') setValue('department', '');
+                          }} 
+                          className="px-3 py-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-all"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Enter a custom department name</p>
                     </div>
                   )}
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Academic Year <span className="text-red-500">*</span></label>
-                  <select {...register('academicYear', { required: true })} className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-400 focus:outline-none text-base">
-                    <option value="">Select Year</option>
-                    <option>2024-2025</option><option>2025-2026</option><option>2026-2027</option>
-                  </select>
+                  <div className="relative">
+                    <select 
+                      {...register('academicYear', { required: true })} 
+                      className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-400 focus:outline-none text-base appearance-none"
+                      onChange={(e) => {
+                        setValue('academicYear', e.target.value);
+                        if (e.target.value === 'other') {
+                          setUiState(prev => ({ ...prev, showCustomYearInput: true }));
+                        } else {
+                          setUiState(prev => ({ ...prev, showCustomYearInput: false }));
+                        }
+                      }}
+                    >
+                      <option value="">Select Academic Year</option>
+                      {academicYears.map(year => <option key={year} value={year}>{year}</option>)}
+                      <option value="other">+ Add Custom Year</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <ChevronDown className="h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+                  
+                  {watchAcademicYear === 'other' && uiState.showCustomYearInput && (
+                    <div className="mt-2">
+                      <div className="flex gap-2 items-center">
+                        <input 
+                          {...register('customAcademicYear')} 
+                          type="text" 
+                          placeholder="Enter academic year (e.g., 2029-2030)" 
+                          className="flex-1 px-4 py-2 rounded-lg border border-indigo-300 focus:border-indigo-400 focus:outline-none text-base bg-indigo-50" 
+                          autoFocus
+                        />
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            setUiState(prev => ({ ...prev, showCustomYearInput: false }));
+                            setValue('customAcademicYear', '');
+                            if (watchAcademicYear === 'other') setValue('academicYear', '');
+                          }} 
+                          className="px-3 py-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-all"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Enter a custom academic year (format: YYYY-YYYY)</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -553,7 +649,7 @@ const UploadRoutine = () => {
                 <div className="min-w-[800px]">
                   <div className="mb-5 text-center">
                     <h4 className="text-xl font-bold text-gray-800">{watch('routineTitle') || 'Class Routine'}</h4>
-                    <p className="text-sm text-gray-500 mt-1">{getDepartmentDisplay()} | {watch('semester')} | {watch('academicYear')}</p>
+                    <p className="text-sm text-gray-500 mt-1">{getDepartmentDisplay()} | {watch('semester')} | {getAcademicYearDisplay()}</p>
                     {watch('routineDescription') && <p className="text-xs text-gray-400 mt-1">{watch('routineDescription')}</p>}
                   </div>
                   <table className="w-full border-collapse rounded-lg overflow-hidden shadow-sm">
@@ -588,10 +684,10 @@ const UploadRoutine = () => {
                                       </div>
                                     </div>
                                   ) : <span className="text-gray-300 text-xs">-</span>}
-                                 </td>
+                                </td>
                               );
                             })}
-                           </tr>
+                          </tr>
                         );
                       })}
                     </tbody>
