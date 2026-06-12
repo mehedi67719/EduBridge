@@ -7,11 +7,12 @@ import Routine from "../Pages/Commanpages/Routine";
 import Assignment from "../Pages/Commanpages/Assignment";
 import Results from "../Pages/Commanpages/Results";
 import Chat from "../Pages/Commanpages/Chat";
-import Dashboard from "../Pages/Commanpages/Dashboard";
 import Login from "../Pages/Login";
 import Register from "../Pages/Register";
 import UploadNotice from "../Pages/Commanpages/UploadNotice";
 import UploadAssignemnt from "../Pages/Teacher/UploadAssignemnt";
+import DashboardRoot from "./DashboardRoot";
+import DashboardHome from "../Pages/Dashboard/DashboardHome";
 
 
 export const router = createBrowserRouter([
@@ -44,10 +45,7 @@ export const router = createBrowserRouter([
         path:"/chat",
         Component:Chat
       },
-      {
-        path:"/dashboard",
-        Component:Dashboard
-      },
+     
       {
         path:"/login",
         Component:Login
@@ -66,4 +64,14 @@ export const router = createBrowserRouter([
       }
     ],
   },
+  {
+    path:"/dashboard",
+    Component:DashboardRoot,
+    children:[
+      {
+        index:true,
+        Component:DashboardHome
+      }
+    ]
+  }
 ]);

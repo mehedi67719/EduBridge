@@ -25,7 +25,7 @@ const Notice = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [noticesData, setNoticesData] = useState([]);
-  const [loading, setLoading] = useState(true); // Changed to true initially
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
     const getData = async () => {

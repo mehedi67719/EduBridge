@@ -54,10 +54,12 @@ const UploadAssignment = () => {
   });
 
   const roles = [
-    { id: 'student', name: 'Student', icon: Users, color: 'from-purple-500 to-pink-500', desc: 'Submit assignments and view grades' },
-    { id: 'instructor', name: 'Instructor', icon: GraduationCap, color: 'from-blue-500 to-indigo-500', desc: 'Create and grade assignments' },
-    { id: 'junior_instructor', name: 'Junior Instructor', icon: Briefcase, color: 'from-cyan-500 to-teal-500', desc: 'Assist in assignment evaluation' },
-    { id: 'craft_instructor', name: 'Craft Instructor', icon: Wrench, color: 'from-emerald-500 to-green-500', desc: 'Practical assignment management' }
+    { id: 'principal', name: 'Principal', icon: Crown, color: 'from-amber-500 to-orange-500', desc: 'Full campus oversight & management' },
+    { id: 'chip_instructor', name: 'Chip Instructor', icon: UserCog, color: 'from-red-500 to-rose-500', desc: 'Senior technical instructor' },
+    { id: 'instructor', name: 'Instructor', icon: GraduationCap, color: 'from-blue-500 to-indigo-500', desc: 'Subject matter expert' },
+    { id: 'junior_instructor', name: 'Junior Instructor', icon: Briefcase, color: 'from-cyan-500 to-teal-500', desc: 'Assistant teaching staff' },
+    { id: 'craft_instructor', name: 'Craft Instructor', icon: Wrench, color: 'from-emerald-500 to-green-500', desc: 'Practical skill trainer' },
+    { id: 'student', name: 'Student', icon: Users, color: 'from-purple-500 to-pink-500', desc: 'Learn & grow' }
   ];
 
   const subjects = [
@@ -211,7 +213,7 @@ const UploadAssignment = () => {
   };
 
   if (authLoading) {
-    return <Loading />;
+    return <Loading/>;
   }
 
   return (
@@ -352,7 +354,7 @@ const UploadAssignment = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">Target Audience <span className="text-red-500">*</span></label>
-                  <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {roles.map(role => (
                       <button
                         key={role.id}
@@ -592,7 +594,7 @@ const UploadAssignment = () => {
                     className={`flex items-start gap-3 p-3 rounded-xl transition-all cursor-pointer ${formData.selectedRoles.includes(role.id) ? `bg-gradient-to-r ${role.color} bg-opacity-10 border ${role.color.replace('from-', 'border-').replace('to-', '')}` : 'hover:bg-indigo-50'}`} 
                     onClick={() => !uiState.isSubmitting && handleRoleToggle(role.id)}
                   >
-                    <div className={`w-10 h-10 bg-gradient-to-r ${role.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                    <div className={`w-10 h-10 bg-gradient-to-r ${role.color} rounded-lg flex items-center justify-center flex-shrink-0 shadow-md`}>
                       <role.icon className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1">
