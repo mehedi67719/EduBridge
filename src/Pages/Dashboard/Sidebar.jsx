@@ -6,12 +6,8 @@ import {
   LogOut,
   GraduationCap,
   X,
-  BookOpen,
   Calendar,
   FileText,
-  CheckSquare,
-  Award,
-  MessageCircle,
   Bell,
   HelpCircle,
   Shield,
@@ -31,15 +27,10 @@ const Sidebar = ({ isOpen = true, device = "desktop", activeTab, setActiveTab, c
 
   const mainMenuItems = [
     { id: "overview", icon: LayoutDashboard, label: "Overview", badge: null, path: "/dashboard" },
-    { id: "subjects", icon: BookOpen, label: "Subjects", badge: "8", path: "/dashboard/subjects" },
     { id: "uploadNotice", icon: Bell, label: "Upload Notice", badge: null, path: "/dashboard/upload-notice" },
     { id: "uploadAssignment", icon: FileText, label: "Upload Assignment", badge: null, path: "/dashboard/upload-assignment" },
-    { id: "assignments", icon: FileText, label: "Assignments", badge: "3", path: "/dashboard/assignments" },
-    { id: "attendance", icon: CheckSquare, label: "Attendance", badge: "85%", path: "/dashboard/attendance" },
-    { id: "results", icon: Award, label: "Results", badge: "3.75", path: "/dashboard/results" },
-    { id: "schedule", icon: Calendar, label: "Schedule", badge: null, path: "/dashboard/schedule" },
-    { id: "messages", icon: MessageCircle, label: "Messages", badge: "2", path: "/dashboard/messages" },
-    { id: "notices", icon: Bell, label: "Notices", badge: "3", path: "/dashboard/notices" },
+    { id: "uploadRoutine", icon: Calendar, label: "Upload Routine", badge: null, path: "/dashboard/upload-routine" },
+  
   ];
 
   const accountMenuItems = [
@@ -67,7 +58,7 @@ const Sidebar = ({ isOpen = true, device = "desktop", activeTab, setActiveTab, c
   const showText = isDesktop || isMobile;
   const sidebarWidth = isMobile ? "w-72" : "w-64 lg:w-72";
 
-  // Get active tab based on current path
+ 
   const getActiveTabFromPath = () => {
     const currentPath = location.pathname;
     const foundItem = mainMenuItems.find(item => item.path === currentPath);
@@ -144,27 +135,7 @@ const Sidebar = ({ isOpen = true, device = "desktop", activeTab, setActiveTab, c
             </div>
           )}
 
-          {isDesktop && (
-            <div className="mx-3 lg:mx-4 mt-3 lg:mt-4 space-y-2">
-              {quickStats.map((stat, idx) => (
-                <div key={idx} className="p-2 rounded-lg lg:rounded-xl bg-white/5 border border-white/10">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-1.5 lg:gap-2">
-                      <stat.icon className="w-2.5 h-2.5 text-white/60" />
-                      <span className="text-[10px] text-white/70">{stat.label}</span>
-                    </div>
-                    <span className="text-[10px] font-semibold text-white">{stat.value}</span>
-                  </div>
-                  <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-400"
-                      style={{ width: `${stat.progress}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+      
 
           <div className="px-3 mt-4">
             {showText && (

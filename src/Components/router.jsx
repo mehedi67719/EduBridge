@@ -12,6 +12,7 @@ import UploadNotice from "../Pages/Commanpages/UploadNotice";
 import UploadAssignemnt from "../Pages/Teacher/UploadAssignemnt";
 import DashboardRoot from "./DashboardRoot";
 import DashboardHome from "../Pages/Dashboard/DashboardHome";
+import UploadRoutine from "../Pages/Teacher/UploadRoutine";
 
 export const router = createBrowserRouter([
   {
@@ -70,6 +71,10 @@ export const router = createBrowserRouter([
         path: "/dashboard/upload-assignment",
         Component: UploadAssignemnt,
       },
+      {
+        path:"/dashboard/upload-routine",
+        Component:UploadRoutine
+      }
     ],
   },
 ]);

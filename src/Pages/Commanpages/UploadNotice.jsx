@@ -11,7 +11,7 @@ import { uploadNotice } from '../../API/Notice/UploadNotice';
 import Loading from '../../Components/Loading';
 
 const UploadNotice = () => {
-  const { dbUser } = Useauth();
+  const { dbUser,loading } = Useauth();
   const { uploadImage, loading: uploadLoading, error: uploadError } = useCloudinaryUpload();
 
   const [formData, setFormData] = useState({
@@ -170,6 +170,11 @@ const UploadNotice = () => {
     const colors = { high: 'bg-red-100 text-red-700', medium: 'bg-amber-100 text-amber-700', low: 'bg-green-100 text-green-700' };
     return colors[p] || colors.medium;
   };
+
+
+  if(loading){
+    return <Loading/>
+  }
 
   const getCategoryDisplay = () => formData.customCategory || formData.noticeType;
 
