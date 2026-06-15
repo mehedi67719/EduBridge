@@ -8,6 +8,7 @@ import {
 } from "firebase/auth";
 import { auth } from "../Firebase/firebase.init";
 import { loginuser } from "../API/Users/Loginuser";
+import { setupInterceptors } from "../Hooks/setupInterceptors";
 
 const Authprovider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -22,6 +23,9 @@ const Authprovider = ({ children }) => {
 
       if (currentUser?.email) {
         try {
+          const firebaseToken = await currentUser.getIdToken();
+          setupInterceptors(firebaseToken);
+          
           const userdata = await loginuser(currentUser.email);
 
           if (isMounted) {
@@ -32,6 +36,7 @@ const Authprovider = ({ children }) => {
           if (isMounted) setDbUser(null);
         }
       } else {
+        setupInterceptors(null);
         if (isMounted) setDbUser(null);
       }
 
@@ -44,16 +49,23 @@ const Authprovider = ({ children }) => {
     };
   }, []);
 
-  const signup = (email, password) => {
-    return createUserWithEmailAndPassword(auth, email, password);
+  const signup = async (email, password) => {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    const token = await result.user.getIdToken();
+    setupInterceptors(token);
+    return result;
   };
 
-  const login = (email, password) => {
-    return signInWithEmailAndPassword(auth, email, password);
+  const login = async (email, password) => {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    const token = await result.user.getIdToken();
+    setupInterceptors(token);
+    return result;
   };
 
   const logout = async () => {
     await signOut(auth);
+    setupInterceptors(null);
     setUser(null);
     setDbUser(null);
   };

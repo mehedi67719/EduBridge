@@ -2,6 +2,8 @@ import { axiosSecure } from "./Axiosinstance";
 
 export const setupInterceptors = (token) => {
   // Request interceptor
+
+  
   const requestInterceptor = axiosSecure.interceptors.request.use(
     (config) => {
       // token attach

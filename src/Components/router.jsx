@@ -1,20 +1,20 @@
 import Root from "./Root";
 import Home from "../Pages/Commanpages/Home";
 import { createBrowserRouter } from "react-router";
-import Notice from "../Pages/Commanpages/Notice";
 import Routine from "../Pages/Commanpages/Routine";
 import Assignment from "../Pages/Commanpages/Assignment";
 import Results from "../Pages/Commanpages/Results";
 import Chat from "../Pages/Commanpages/Chat";
 import Login from "../Pages/Login";
 import Register from "../Pages/Register";
-import UploadNotice from "../Pages/Commanpages/UploadNotice";
 import DashboardRoot from "./DashboardRoot";
 import DashboardHome from "../Pages/Dashboard/DashboardHome";
 import UploadRoutine from "../Pages/Teacher/UploadRoutine";
 import Profile from "../Pages/Commanpages/Profile";
 import Seeting from "../Pages/Commanpages/Seeting";
 import UploadAssignment from "../Pages/Teacher/Assignment/UploadAssignemnt";
+import Notice from "../Pages/Commanpages/Notice/Notice";
+import UploadNotice from "../Pages/Commanpages/Notice/UploadNotice";
 
 export const router = createBrowserRouter([
   {

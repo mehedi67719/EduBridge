@@ -21,10 +21,10 @@ import {
   User,
 } from "lucide-react";
 import Swal from "sweetalert2";
-import Useauth from "../../Hooks/Useauth";
-import useCloudinaryUpload from "../../Hooks/useCloudinaryUpload";
-import { uploadNotice } from "../../API/Notice/UploadNotice";
-import Loading from "../../Components/Loading";
+import Useauth from "../../../Hooks/Useauth";
+import useCloudinaryUpload from "../../../Hooks/useCloudinaryUpload";
+import { uploadNotice } from "../../../API/Notice/UploadNotice";
+import Loading from "../../../Components/Loading";
 
 const UploadNotice = () => {
   const { dbUser, loading } = Useauth();
@@ -54,49 +54,49 @@ const UploadNotice = () => {
   const roles = [
     {
       id: "public",
-      name: "Public",
+      name: "public",
       icon: Globe,
       color: "from-gray-500 to-gray-600",
       desc: "Visible to everyone - no login required",
     },
     {
       id: "principal",
-      name: "Principal",
+      name: "principal",
       icon: Crown,
       color: "from-amber-500 to-orange-500",
       desc: "Full campus analytics, all reports, teacher management",
     },
     {
       id: "chip_instructor",
-      name: "Chip Instructor",
+      name: "chip_instructor",
       icon: UserCog,
       color: "from-red-500 to-rose-500",
       desc: "Department oversight, instructor coordination",
     },
     {
       id: "instructor",
-      name: "Instructor",
+      name: "instructor",
       icon: GraduationCap,
       color: "from-blue-500 to-indigo-500",
       desc: "Class management, assignment creation, grading",
     },
     {
       id: "junior_instructor",
-      name: "Junior Instructor",
+      name: "junior_instructor",
       icon: Briefcase,
       color: "from-cyan-500 to-teal-500",
       desc: "Assist senior instructors, lab sessions",
     },
     {
       id: "craft_instructor",
-      name: "Craft Instructor",
+      name: "craft_instructor",
       icon: Wrench,
       color: "from-emerald-500 to-green-500",
       desc: "Practical training, workshop management",
     },
     {
       id: "student",
-      name: "Student",
+      name: "student",
       icon: Users,
       color: "from-purple-500 to-pink-500",
       desc: "View notices, assignments, results",

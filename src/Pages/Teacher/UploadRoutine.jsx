@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   Upload,
@@ -10,8 +10,6 @@ import {
   Briefcase,
   Wrench,
   Crown,
-  Bell,
-  CheckCircle,
   Plus,
   Loader2,
   Calendar,
