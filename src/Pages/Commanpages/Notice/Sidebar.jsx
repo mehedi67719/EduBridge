@@ -5,78 +5,31 @@ import {
   TrendingUp,
   ChevronRight,
   Bell,
-  Calendar,
-  Megaphone,
-  Clock,
-  Award,
-  Users,
-  Sparkles,
-  BookOpen,
-  GraduationCap,
   Heart,
-  Layers
+  Layers,
+  FileText
 } from "lucide-react";
 
 const Sidebar = ({ category, selectcategory, setselectcategory }) => {
-  const getCategoryIcon = (categoryName) => {
-    const iconMap = {
-      "Examination": Calendar,
-      "Event": Megaphone,
-      "Holiday": Clock,
-      "Result": Award,
-      "Meeting": Users,
-      "Workshop": Sparkles,
-      "Training": BookOpen,
-      "Seminar": GraduationCap,
-      "General": Bell
-    };
-    const Icon = iconMap[categoryName] || Tag;
-    return <Icon className="w-4 h-4" />;
+  const getCategoryIcon = () => {
+    return <FileText className="w-4 h-4" />;
   };
 
-  const getCategoryGradient = (categoryName) => {
-    const gradientMap = {
-      "Examination": "from-violet-500 to-purple-600",
-      "Event": "from-orange-500 to-red-600",
-      "Holiday": "from-emerald-500 to-teal-600",
-      "Result": "from-sky-500 to-blue-600",
-      "Meeting": "from-rose-500 to-pink-600",
-      "Workshop": "from-amber-500 to-yellow-600",
-      "Training": "from-indigo-500 to-blue-600",
-      "Seminar": "from-fuchsia-500 to-pink-600",
-      "General": "from-gray-500 to-gray-600"
-    };
-    return gradientMap[categoryName] || "from-indigo-500 to-purple-600";
+  const getCategoryGradient = () => {
+    return "from-indigo-500 to-purple-600";
   };
 
-  const getCategoryColor = (categoryName) => {
-    const colorMap = {
-      "Examination": "text-violet-500",
-      "Event": "text-orange-500",
-      "Holiday": "text-emerald-500",
-      "Result": "text-sky-500",
-      "Meeting": "text-rose-500",
-      "Workshop": "text-amber-500",
-      "Training": "text-indigo-500",
-      "Seminar": "text-fuchsia-500",
-      "General": "text-gray-500"
-    };
-    return colorMap[categoryName] || "text-indigo-500";
+  const getCategoryColor = () => {
+    return "text-indigo-500";
   };
 
-  const getCategoryBgLight = (categoryName) => {
-    const bgMap = {
-      "Examination": "bg-violet-50",
-      "Event": "bg-orange-50",
-      "Holiday": "bg-emerald-50",
-      "Result": "bg-sky-50",
-      "Meeting": "bg-rose-50",
-      "Workshop": "bg-amber-50",
-      "Training": "bg-indigo-50",
-      "Seminar": "bg-fuchsia-50",
-      "General": "bg-gray-50"
-    };
-    return bgMap[categoryName] || "bg-indigo-50";
+  const getCategoryBgLight = () => {
+    return "bg-indigo-50";
+  };
+
+  const formatCategoryName = (name) => {
+    if (!name) return "";
+    return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
   };
 
   const totalNotices = category.reduce((sum, item) => sum + (item.count || 0), 0);
@@ -126,9 +79,6 @@ const Sidebar = ({ category, selectcategory, setselectcategory }) => {
       <div className="space-y-1 max-h-[380px] overflow-y-auto pr-1">
         {category.map((item, index) => {
           const isActive = selectcategory === item._id;
-          const gradient = getCategoryGradient(item._id);
-          const colorClass = getCategoryColor(item._id);
-          const bgLight = getCategoryBgLight(item._id);
           
           return (
             <button
@@ -136,20 +86,20 @@ const Sidebar = ({ category, selectcategory, setselectcategory }) => {
               onClick={() => setselectcategory(item._id)}
               className={`group w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-300 ${
                 isActive
-                  ? `bg-gradient-to-r ${gradient} text-white shadow-md`
-                  : `hover:${bgLight} text-gray-600`
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md"
+                  : "hover:bg-indigo-50 text-gray-600"
               }`}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                  isActive ? "bg-white/20" : bgLight
+                  isActive ? "bg-white/20" : "bg-indigo-50"
                 }`}>
-                  <div className={isActive ? "text-white" : colorClass}>
-                    {getCategoryIcon(item._id)}
+                  <div className={isActive ? "text-white" : "text-indigo-500"}>
+                    {getCategoryIcon()}
                   </div>
                 </div>
                 <span className={`text-sm font-medium ${isActive ? "text-white" : "text-gray-700"}`}>
-                  {item._id}
+                  {formatCategoryName(item._id)}
                 </span>
               </div>
               <div className="flex items-center gap-1">
@@ -178,16 +128,14 @@ const Sidebar = ({ category, selectcategory, setselectcategory }) => {
         </div>
         <div className="flex flex-wrap gap-1.5">
           {category.slice(0, 6).map((item, idx) => {
-            const bgLight = getCategoryBgLight(item._id);
-            const colorClass = getCategoryColor(item._id);
             return (
               <button
                 key={idx}
                 onClick={() => setselectcategory(item._id)}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 ${bgLight} rounded-lg text-xs font-medium transition-all duration-300 hover:shadow-sm`}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-50 rounded-lg text-xs font-medium transition-all duration-300 hover:shadow-sm`}
               >
-                <span className={colorClass}>{getCategoryIcon(item._id)}</span>
-                <span className="text-gray-700">{item._id}</span>
+                <span className="text-indigo-500">{getCategoryIcon()}</span>
+                <span className="text-gray-700">{formatCategoryName(item._id)}</span>
                 <span className="text-gray-400 text-[10px]">{item.count}</span>
               </button>
             );

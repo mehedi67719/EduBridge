@@ -17,7 +17,7 @@ const Notice = () => {
   const [error, setError] = useState(null);
 
   const { dbUser, loading: authLoading } = Useauth();
-  const userRole = dbUser?.userType || "";
+  const userRole = dbUser?.userType || "public";
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -35,12 +35,10 @@ const Notice = () => {
   }, []);
 
   useEffect(() => {
-    
-
     const fetchNotices = async () => {
-      setLoading(true);
-      setError(null);
       try {
+        setLoading(true);
+        setError(null);
         const data = await loadNotice(selectCategory, userRole, searchTerm);
         setNotices(data || []);
       } catch (error) {
@@ -50,9 +48,9 @@ const Notice = () => {
         setLoading(false);
       }
     };
-
-    fetchNotices();
-  }, [selectCategory, searchTerm, userRole, authLoading]);
+    const timer = setTimeout(fetchNotices, 400);
+    return () => clearTimeout(timer);
+  }, [selectCategory, searchTerm, userRole]);
 
   const clearSearch = () => setSearchTerm("");
 
@@ -70,17 +68,17 @@ const Notice = () => {
         </div>
 
         <div className="mb-6 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search notice..."
-            className="w-full pl-10 pr-10 p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full pl-10 pr-10 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
           />
           {searchTerm && (
             <button
               onClick={clearSearch}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               <X className="w-4 h-4" />
             </button>
@@ -88,15 +86,15 @@ const Notice = () => {
         </div>
 
         {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 rounded-xl p-3">
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="mb-4 bg-red-50 border border-red-200 p-3 rounded-xl text-red-600 text-sm">
+            {error}
           </div>
         )}
 
         <div className="flex flex-col lg:flex-row gap-6">
-          <div className="lg:w-72 flex-shrink-0">
+          <div className="lg:w-72">
             {categoryLoading ? (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <div className="bg-white rounded-2xl shadow-sm border p-6">
                 <Loading />
               </div>
             ) : (
@@ -108,37 +106,25 @@ const Notice = () => {
             )}
           </div>
 
-          <div className="flex-1">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-                <div className="flex items-center justify-between flex-wrap gap-3">
-                  <div>
-                    <h2 className="font-semibold text-gray-800">
-                      {selectCategory === "all"
-                        ? "All Notices"
-                        : selectCategory}
-                    </h2>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {!loading && `${notices.length} ${notices.length === 1 ? "notice" : "notices"} found`}
-                    </p>
-                  </div>
-                  {searchTerm && (
-                    <div className="flex items-center gap-2 text-sm text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full">
-                      <span>🔍 Searching: "{searchTerm}"</span>
-                      <button
-                        onClick={clearSearch}
-                        className="hover:bg-indigo-100 rounded-full p-0.5 transition-colors"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
+          <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+              <div className="flex justify-between items-center">
+                <h2 className="font-semibold text-gray-800">
+                  {selectCategory === "all" ? "All Notices" : selectCategory}
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {loading ? "Loading..." : `${notices.length} notices found`}
+                </p>
+              </div>
+            </div>
+            <div className="max-h-[calc(100vh-320px)] overflow-y-auto">
+              {loading || authLoading ? (
+                <div className="flex justify-center py-12">
+                  <Loading />
                 </div>
-              </div>
-
-              <div className="max-h-[calc(100vh-320px)] overflow-y-auto">
-                {loading && authLoading ? <Loading /> : <Content notices={notices} />}
-              </div>
+              ) : (
+                <Content notices={notices} />
+              )}
             </div>
           </div>
         </div>

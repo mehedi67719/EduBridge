@@ -15,6 +15,7 @@ import Seeting from "../Pages/Commanpages/Seeting";
 import UploadAssignment from "../Pages/Teacher/Assignment/UploadAssignemnt";
 import Notice from "../Pages/Commanpages/Notice/Notice";
 import UploadNotice from "../Pages/Commanpages/Notice/UploadNotice";
+import NoticeDetails from "../Pages/Commanpages/Notice/NoticeDetails";
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +29,10 @@ export const router = createBrowserRouter([
       {
         path: "/notice",
         Component: Notice,
+      },
+      {
+        path:"/notice/details/:id",
+        Component:NoticeDetails
       },
       {
         path: "/routine",
