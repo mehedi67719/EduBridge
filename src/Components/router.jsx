@@ -2,7 +2,6 @@ import Root from "./Root";
 import Home from "../Pages/Commanpages/Home";
 import { createBrowserRouter } from "react-router";
 import Routine from "../Pages/Commanpages/Routine";
-import Assignment from "../Pages/Commanpages/Assignment";
 import Results from "../Pages/Commanpages/Results";
 import Chat from "../Pages/Commanpages/Chat";
 import Login from "../Pages/Login";
@@ -16,6 +15,7 @@ import UploadAssignment from "../Pages/Teacher/Assignment/UploadAssignemnt";
 import Notice from "../Pages/Commanpages/Notice/Notice";
 import UploadNotice from "../Pages/Commanpages/Notice/UploadNotice";
 import NoticeDetails from "../Pages/Commanpages/Notice/NoticeDetails";
+import Assignment from "../Pages/Commanpages/Assignment/Assignment";
 
 export const router = createBrowserRouter([
   {
