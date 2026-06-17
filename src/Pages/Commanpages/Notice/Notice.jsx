@@ -14,6 +14,7 @@ import { noticeCategory } from "../../../API/Notice/NoticeCategory";
 import { loadNotice } from "../../../API/Notice/Notice";
 import Useauth from "../../../Hooks/Useauth";
 import Loading from "../../../Components/Loading";
+import ErrorComponent from "../../../Components/ErrorComponent";
 
 const Notice = () => {
   const [category, setCategory] = useState([]);
@@ -37,6 +38,7 @@ const Notice = () => {
         setCategoryLoading(true);
         const res = await noticeCategory();
         setCategory(res || []);
+        setError(null);
       } catch (error) {
         setError("Failed to load categories");
       } finally {
@@ -63,6 +65,7 @@ const Notice = () => {
         setNotices(data?.data || []);
         setTotalPages(data?.totalPages || 1);
         setTotalNotices(data?.totalItems || data?.data?.length || 0);
+        setError(null);
       } catch (error) {
         setError("Failed to load notices");
         setNotices([]);
@@ -74,11 +77,13 @@ const Notice = () => {
     };
 
     const timer = setTimeout(() => {
-      fetchNotices();
+      if (!authLoading) {
+        fetchNotices();
+      }
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [selectCategory, searchTerm, userRole, currentPage]);
+  }, [selectCategory, searchTerm, userRole, currentPage, authLoading]);
 
   const clearSearch = () => {
     setSearchTerm("");
@@ -90,6 +95,32 @@ const Notice = () => {
       setCurrentPage(page);
     }
   };
+
+  const handleRetry = () => {
+    setError(null);
+    setLoading(true);
+    const fetchNotices = async () => {
+      try {
+        const data = await loadNotice(
+          selectCategory,
+          userRole,
+          searchTerm,
+          currentPage,
+        );
+        setNotices(data?.data || []);
+        setTotalPages(data?.totalPages || 1);
+        setTotalNotices(data?.totalItems || data?.data?.length || 0);
+        setError(null);
+      } catch (error) {
+        setError("Failed to load notices");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNotices();
+  };
+
+  const isLoading = loading || authLoading;
 
   return (
     <div className="min-h-screen">
@@ -173,13 +204,6 @@ const Notice = () => {
           </div>
         </div>
 
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-600">
-            <X className="w-5 h-5 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="lg:w-80 xl:w-96 flex-shrink-0">
             <div className="sticky top-6">
@@ -214,7 +238,7 @@ const Notice = () => {
                         : selectCategory}
                     </h2>
                     <p className="text-xs text-gray-500">
-                      {loading
+                      {isLoading
                         ? "Loading..."
                         : `${totalNotices} notices available`}
                     </p>
@@ -230,7 +254,7 @@ const Notice = () => {
                         : selectCategory}
                     </span>
                   </div>
-                  {notices.length > 0 && (
+                  {notices.length > 0 && !isLoading && (
                     <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 rounded-lg border border-emerald-200">
                       <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
                       <span className="text-xs font-medium text-emerald-700">
@@ -242,7 +266,9 @@ const Notice = () => {
               </div>
 
               <div className="p-4">
-                {loading || authLoading ? (
+                {error ? (
+                  <ErrorComponent error={error} onRetry={handleRetry} />
+                ) : isLoading ? (
                   <div className="py-20 flex items-center justify-center">
                     <Loading />
                   </div>
