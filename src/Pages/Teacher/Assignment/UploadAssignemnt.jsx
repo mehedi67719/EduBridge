@@ -62,13 +62,13 @@ const UploadAssignment = () => {
   const [uiState, setUiState] = useState({ showPreview: false, showLinkInput: false, currentLink: "", uploadingImages: false });
 
   const roles = [
-    { id: "public", name: "Public", icon: Globe, color: "from-gray-500 to-gray-600", desc: "Visible to everyone - no login required" },
-    { id: "principal", name: "Principal", icon: Crown, color: "from-amber-500 to-orange-500", desc: "Full campus oversight & management" },
-    { id: "chip_instructor", name: "Chip Instructor", icon: UserCog, color: "from-red-500 to-rose-500", desc: "Senior technical instructor" },
-    { id: "instructor", name: "Instructor", icon: GraduationCap, color: "from-blue-500 to-indigo-500", desc: "Subject matter expert" },
-    { id: "junior_instructor", name: "Junior Instructor", icon: Briefcase, color: "from-cyan-500 to-teal-500", desc: "Assistant teaching staff" },
-    { id: "craft_instructor", name: "Craft Instructor", icon: Wrench, color: "from-emerald-500 to-green-500", desc: "Practical skill trainer" },
-    { id: "student", name: "Student", icon: Users, color: "from-purple-500 to-pink-500", desc: "Learn & grow" },
+    { id: "public", name: "public", icon: Globe, color: "from-gray-500 to-gray-600", desc: "Visible to everyone - no login required" },
+    { id: "principal", name: "principal", icon: Crown, color: "from-amber-500 to-orange-500", desc: "Full campus oversight & management" },
+    { id: "chip_instructor", name: "chip_instructor", icon: UserCog, color: "from-red-500 to-rose-500", desc: "Senior technical instructor" },
+    { id: "instructor", name: "instructor", icon: GraduationCap, color: "from-blue-500 to-indigo-500", desc: "Subject matter expert" },
+    { id: "junior_instructor", name: "junior_instructor", icon: Briefcase, color: "from-cyan-500 to-teal-500", desc: "Assistant teaching staff" },
+    { id: "craft_instructor", name: "craft_instructor", icon: Wrench, color: "from-emerald-500 to-green-500", desc: "Practical skill trainer" },
+    { id: "student", name: "student", icon: Users, color: "from-purple-500 to-pink-500", desc: "Learn & grow" },
   ];
 
   const watchSelectedRoles = watch("selectedRoles");

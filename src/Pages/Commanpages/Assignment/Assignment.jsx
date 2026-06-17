@@ -14,33 +14,29 @@ import {
   Eye,
   EyeOff,
   Shield,
-
   Grid,
   List,
   X,
-  AlertCircle,
   ExternalLink,
- 
   ArrowUpRight,
-
   Gift,
   Crown,
-
-  ChevronDown
+  ChevronDown,
+  ChevronLeft,
+  AlertCircle
 } from "lucide-react";
 import Loading from "../../../Components/Loading";
+import ErrorComponent from "../../../Components/ErrorComponent";
 import AssignmentHeader from "./AssignmentHeader";
 import AssignmentCard from "./AssignmentCard";
 import { loadassignment } from "../../../API/Assignment/Loadassignment";
-
+import Useauth from "../../../Hooks/Useauth";
 
 const Assignment = () => {
-  const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
-  const [selectedSemester, setSelectedSemester] = useState("all");
   const [assignments, setAssignments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [secretCode, setSecretCode] = useState("");
   const [secretAssignment, setSecretAssignment] = useState(null);
@@ -48,25 +44,41 @@ const Assignment = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [showPassword, setShowPassword] = useState(false);
   const [secretError, setSecretError] = useState("");
-  const [semesters, setSemesters] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalAssignments, setTotalAssignments] = useState(0);
+  const [subjects, setSubjects] = useState(["All"]);
+
+  const { dbUser, loading: authLoading } = Useauth();
 
   useEffect(() => {
-    fetchAssignments();
-  }, []);
+    if (!authLoading) {
+      fetchAssignments();
+    }
+  }, [searchTerm, selectedSubject, currentPage, authLoading, dbUser]);
 
   const fetchAssignments = async () => {
     try {
       setLoading(true);
-      const data = await loadassignment();
+      setError(null);
+      
+      const role = dbUser?.userType || "public";
+      const search = searchTerm.trim();
+      const page = currentPage;
+      const secretcode = secretCode.trim();
+      const subject = selectedSubject === "all" ? "" : selectedSubject;
+      
+      const data = await loadassignment(role, search, page, secretcode, subject);
+      
       if (data && data.data) {
-        const transformed = data.data.map((item, index) => {
-          const semester = item.semester || item.subjects?.[0]?.semester || "General";
+        const transformed = data.data.map((item) => {
+          const subjectName = item.subjects?.[0] || "General";
           return {
-            id: item._id || index,
+            id: item._id,
             title: item.assignmentTitle || "Untitled Assignment",
             description: item.assignmentDescription || "No description provided",
-            subject: item.subjects?.[0]?.name || "General",
-            semester: semester,
+            subject: typeof subjectName === 'string' ? subjectName : subjectName?.name || "General",
+            semester: "General",
             deadline: item.deadline || null,
             totalMarks: parseInt(item.totalMarks) || 0,
             teacher: item.createdBy?.fullName || "Teacher",
@@ -75,13 +87,32 @@ const Assignment = () => {
             priority: item.priority || "medium",
             attachments: item.attachments?.length || 0,
             isPrivate: item.isPrivate || false,
+            targetRoles: item.targetRoles || [],
           };
         });
         setAssignments(transformed);
-        setSemesters(["All", ...new Set(transformed.map(a => a.semester))]);
+        
+        if (data.total) {
+          setTotalAssignments(data.total);
+          setTotalPages(Math.ceil(data.total / (data.limit || 10)));
+        } else {
+          setTotalAssignments(transformed.length);
+          setTotalPages(1);
+        }
+        
+        if (data.subjects) {
+          const subjectList = ["All", ...data.subjects.filter(s => typeof s === 'string')];
+          setSubjects(subjectList);
+        }
+      } else {
+        setAssignments([]);
+        setTotalAssignments(0);
+        setTotalPages(1);
       }
+      
       setLoading(false);
     } catch (err) {
+      console.error("Error fetching assignments:", err);
       setError("Failed to load assignments. Please try again.");
       setLoading(false);
     }
@@ -93,40 +124,15 @@ const Assignment = () => {
       setTimeout(() => setSecretError(""), 3000);
       return;
     }
-
-    const found = assignments.find(
-      (a) => a.secretCode?.toLowerCase() === secretCode.toLowerCase().trim()
-    );
-    
-    if (found) {
-      setSecretAssignment(found);
-      setSecretError("");
-      setShowSecret(true);
-      setSecretCode("");
-    } else {
-      setSecretError("Invalid secret code. Please try again.");
-      setTimeout(() => setSecretError(""), 3000);
-    }
+    fetchAssignments();
   };
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") handleSecretSearch();
   };
 
-  const subjects = ["All", ...new Set(assignments.map((a) => a.subject))];
-
-  const filtered = assignments.filter((a) => {
-    const matchesTab = activeTab === "all" || a.status === activeTab;
-    const matchesSearch = a.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         a.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         a.teacher?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSubject = selectedSubject === "all" || a.subject === selectedSubject;
-    const matchesSemester = selectedSemester === "all" || a.semester === selectedSemester;
-    return matchesTab && matchesSearch && matchesSubject && matchesSemester;
-  });
-
   const stats = [
-    { icon: FileText, label: "Total", value: assignments.length, color: "from-blue-500 to-indigo-500", bg: "bg-blue-50", text: "text-blue-600" },
+    { icon: FileText, label: "Total", value: totalAssignments, color: "from-blue-500 to-indigo-500", bg: "bg-blue-50", text: "text-blue-600" },
     { icon: Clock, label: "Pending", value: assignments.filter(a => a.status === "pending").length, color: "from-amber-500 to-orange-500", bg: "bg-amber-50", text: "text-amber-600" },
     { icon: CheckCircle, label: "Submitted", value: assignments.filter(a => a.status === "submitted").length, color: "from-emerald-500 to-teal-500", bg: "bg-emerald-50", text: "text-emerald-600" },
     { icon: Award, label: "Graded", value: assignments.filter(a => a.status === "graded").length, color: "from-purple-500 to-pink-500", bg: "bg-purple-50", text: "text-purple-600" },
@@ -151,17 +157,7 @@ const Assignment = () => {
   };
 
   const getSemesterBadge = (semester) => {
-    const colors = {
-      "1st": "bg-blue-100 text-blue-700 border-blue-200",
-      "2nd": "bg-indigo-100 text-indigo-700 border-indigo-200",
-      "3rd": "bg-purple-100 text-purple-700 border-purple-200",
-      "4th": "bg-pink-100 text-pink-700 border-pink-200",
-      "5th": "bg-rose-100 text-rose-700 border-rose-200",
-      "6th": "bg-orange-100 text-orange-700 border-orange-200",
-      "7th": "bg-amber-100 text-amber-700 border-amber-200",
-      "8th": "bg-yellow-100 text-yellow-700 border-yellow-200",
-    };
-    return colors[semester] || "bg-gray-100 text-gray-700 border-gray-200";
+    return "bg-gray-100 text-gray-700 border-gray-200";
   };
 
   const formatDate = (date) => {
@@ -176,34 +172,20 @@ const Assignment = () => {
   const resetFilters = () => {
     setSearchTerm("");
     setSelectedSubject("all");
-    setSelectedSemester("all");
-    setActiveTab("all");
+    setCurrentPage(1);
   };
 
-  if (loading) return <Loading />;
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-pink-50 to-rose-50">
-        <div className="bg-white/90 backdrop-blur-sm p-10 rounded-3xl shadow-2xl text-center max-w-md border border-red-100">
-          <div className="w-24 h-24 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <AlertCircle className="w-12 h-12 text-red-500" />
-          </div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-2">Connection Error</h3>
-          <p className="text-gray-500 mb-6">{error}</p>
-          <button onClick={fetchAssignments} className="px-8 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl font-medium hover:shadow-2xl hover:scale-105 transition-all duration-300">
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 p-4 md:p-6 lg:p-8">
       <div className="container">
         <AssignmentHeader
-          totalAssignments={assignments.length} 
+          totalAssignments={totalAssignments} 
           pendingAssignments={assignments.filter(a => a.status === "pending").length} 
         />
 
@@ -244,28 +226,16 @@ const Assignment = () => {
               <div className="flex gap-3 flex-wrap">
                 <div className="relative">
                   <select
-                    value={selectedSemester}
-                    onChange={(e) => setSelectedSemester(e.target.value)}
-                    className="px-5 py-3.5 pr-10 rounded-xl border border-gray-200/50 bg-gray-50/50 focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100/50 transition-all duration-300 text-gray-600 appearance-none cursor-pointer"
-                  >
-                    {semesters.map((semester) => (
-                      <option key={semester} value={semester}>
-                        {semester === "all" ? "All Semesters" : semester}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
-
-                <div className="relative">
-                  <select
                     value={selectedSubject}
-                    onChange={(e) => setSelectedSubject(e.target.value)}
-                    className="px-5 py-3.5 pr-10 rounded-xl border border-gray-200/50 bg-gray-50/50 focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100/50 transition-all duration-300 text-gray-600 appearance-none cursor-pointer"
+                    onChange={(e) => {
+                      setSelectedSubject(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="px-5 py-3.5 pr-10 rounded-xl border border-gray-200/50 bg-gray-50/50 focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100/50 transition-all duration-300 text-gray-600 appearance-none cursor-pointer min-w-[150px]"
                   >
                     {subjects.map((subject) => (
                       <option key={subject} value={subject}>
-                        {subject === "all" ? "All Subjects" : subject}
+                        {subject === "All" ? "All Subjects" : subject}
                       </option>
                     ))}
                   </select>
@@ -373,27 +343,49 @@ const Assignment = () => {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-6">
-          {["all", "pending", "submitted", "graded"].map((tab) => (
-            <button key={tab} onClick={() => setActiveTab(tab)} className={`px-7 py-3 rounded-xl font-medium transition-all duration-300 capitalize ${activeTab === tab ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30 hover:shadow-2xl hover:scale-105" : "bg-white/80 backdrop-blur-sm text-gray-600 hover:bg-white border border-gray-200/50"}`}>
-              {tab === "all" ? "All" : tab}
-            </button>
-          ))}
-        </div>
-
-        {filtered.length > 0 ? (
-          <div className={viewMode === "grid" ? "grid md:grid-cols-2 gap-6" : "space-y-5"}>
-            {filtered.map((assignment) => (
-              <AssignmentCard
-                key={assignment.id}
-                assignment={assignment}
-                statusConfig={getStatusConfig(assignment.status)}
-                priorityConfig={getPriorityConfig(assignment.priority)}
-                semesterBadgeColor={getSemesterBadge(assignment.semester)}
-                formatDate={formatDate}
-              />
-            ))}
+        {error ? (
+          <ErrorComponent error={error} onRetry={fetchAssignments} />
+        ) : loading || authLoading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loading />
           </div>
+        ) : assignments.length > 0 ? (
+          <>
+            <div className={viewMode === "grid" ? "grid md:grid-cols-2 gap-6" : "space-y-5"}>
+              {assignments.map((assignment) => (
+                <AssignmentCard
+                  key={assignment.id}
+                  assignment={assignment}
+                  statusConfig={getStatusConfig(assignment.status)}
+                  priorityConfig={getPriorityConfig(assignment.priority)}
+                  semesterBadgeColor={getSemesterBadge(assignment.semester)}
+                  formatDate={formatDate}
+                />
+              ))}
+            </div>
+            
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-3 mt-8">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1 || loading}
+                  className="px-5 py-2.5 rounded-xl bg-white/80 backdrop-blur-sm border border-gray-200/50 text-gray-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center gap-2"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Previous
+                </button>
+                <span className="text-gray-600 font-medium">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages || loading}
+                  className="px-5 py-2.5 rounded-xl bg-white/80 backdrop-blur-sm border border-gray-200/50 text-gray-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center gap-2"
+                >
+                  Next <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-20 text-center shadow-lg border border-white/50">
             <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center mx-auto mb-6">
