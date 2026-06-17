@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { BookOpen, User, Award, Calendar, Lock, Paperclip, Eye, Upload } from "lucide-react";
+import { BookOpen, User, Award, Calendar, Lock, Paperclip, Eye, Upload, ArrowRight } from "lucide-react";
+import { Link } from "react-router";
 
 const AssignmentCard = ({ assignment, statusConfig, priorityConfig, semesterBadgeColor, formatDate }) => {
   const [hovered, setHovered] = useState(false);
@@ -16,10 +17,6 @@ const AssignmentCard = ({ assignment, statusConfig, priorityConfig, semesterBadg
       <div className="relative flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap mb-3">
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusConfig.bg} ${statusConfig.text} flex items-center gap-1.5 border ${statusConfig.border}`}>
-              <StatusIcon className="w-3.5 h-3.5" />
-              {statusConfig.label}
-            </span>
             <span className={`px-3 py-1 rounded-full text-xs font-medium ${priorityConfig.bg} ${priorityConfig.text} flex items-center gap-1.5`}>
               <span className={`w-1.5 h-1.5 rounded-full ${priorityConfig.dot}`}></span>
               {priorityConfig.label} Priority
@@ -63,14 +60,21 @@ const AssignmentCard = ({ assignment, statusConfig, priorityConfig, semesterBadg
         </div>
 
         <div className="flex flex-col gap-2 ml-4 flex-shrink-0">
-          <button className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl text-sm font-medium hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2 whitespace-nowrap">
-            <Eye className="w-4 h-4" /> View
-          </button>
-          {assignment.status === "pending" && (
-            <button className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-sm font-medium hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2 whitespace-nowrap">
-              <Upload className="w-4 h-4" /> Submit
-            </button>
-          )}
+          <Link 
+            to={`/assignment/${assignment.id}`} 
+            className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl text-sm font-medium hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2 whitespace-nowrap group/btn"
+          >
+            <Eye className="w-4 h-4 group-hover/btn:rotate-12 transition-transform duration-300" /> 
+            View Details
+            <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-300" />
+          </Link>
+          <Link 
+            to={`/assignment/submit/${assignment.id}`} 
+            className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-sm font-medium hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2 whitespace-nowrap group/btn2"
+          >
+            <Upload className="w-4 h-4 group-hover/btn2:-translate-y-1 transition-transform duration-300" /> 
+            Submit Assignment
+          </Link>
         </div>
       </div>
     </div>

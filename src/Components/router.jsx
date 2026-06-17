@@ -16,6 +16,8 @@ import Notice from "../Pages/Commanpages/Notice/Notice";
 import UploadNotice from "../Pages/Commanpages/Notice/UploadNotice";
 import NoticeDetails from "../Pages/Commanpages/Notice/NoticeDetails";
 import Assignment from "../Pages/Commanpages/Assignment/Assignment";
+import Submitassignment from "../Pages/Commanpages/Assignment/Submitassignment";
+import Assignmentdetels from "../Pages/Commanpages/Assignment/Assignmentdetels";
 
 export const router = createBrowserRouter([
   {
@@ -31,8 +33,8 @@ export const router = createBrowserRouter([
         Component: Notice,
       },
       {
-        path:"/notice/details/:id",
-        Component:NoticeDetails
+        path: "/notice/details/:id",
+        Component: NoticeDetails,
       },
       {
         path: "/routine",
@@ -42,7 +44,14 @@ export const router = createBrowserRouter([
         path: "/assignment",
         Component: Assignment,
       },
-
+      {
+        path: "/assignment/submit/:id",
+        Component: Submitassignment,
+      },
+      {
+        path: "/assignment/:id",
+        Component: Assignmentdetels,
+      },
       {
         path: "/results",
         Component: Results,
@@ -79,17 +88,17 @@ export const router = createBrowserRouter([
         Component: UploadAssignment,
       },
       {
-        path:"/dashboard/upload-routine",
-        Component:UploadRoutine
+        path: "/dashboard/upload-routine",
+        Component: UploadRoutine,
       },
       {
-        path:"/dashboard/profile",
-        Component:Profile
+        path: "/dashboard/profile",
+        Component: Profile,
       },
       {
-        path:"/dashboard/settings",
-        Component:Seeting
-      }
+        path: "/dashboard/settings",
+        Component: Seeting,
+      },
     ],
   },
 ]);
