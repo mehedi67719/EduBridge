@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   FileText,
-  CheckCircle,
-  Clock,
-  Award,
   Search,
   Lock,
   BookOpen,
@@ -23,7 +20,12 @@ import {
   Crown,
   ChevronDown,
   ChevronLeft,
-  AlertCircle
+  AlertCircle,
+  Clock,
+  CheckCircle,
+  Award,
+  TrendingUp,
+  Calendar
 } from "lucide-react";
 import Loading from "../../../Components/Loading";
 import ErrorComponent from "../../../Components/ErrorComponent";
@@ -132,10 +134,16 @@ const Assignment = () => {
   };
 
   const stats = [
-    { icon: FileText, label: "Total", value: totalAssignments, color: "from-blue-500 to-indigo-500", bg: "bg-blue-50", text: "text-blue-600" },
-    { icon: Clock, label: "Pending", value: assignments.filter(a => a.status === "pending").length, color: "from-amber-500 to-orange-500", bg: "bg-amber-50", text: "text-amber-600" },
-    { icon: CheckCircle, label: "Submitted", value: assignments.filter(a => a.status === "submitted").length, color: "from-emerald-500 to-teal-500", bg: "bg-emerald-50", text: "text-emerald-600" },
-    { icon: Award, label: "Graded", value: assignments.filter(a => a.status === "graded").length, color: "from-purple-500 to-pink-500", bg: "bg-purple-50", text: "text-purple-600" },
+    { 
+      icon: FileText, 
+      label: "Total Assignments", 
+      value: totalAssignments, 
+      color: "from-blue-500 to-indigo-500", 
+      bg: "bg-gradient-to-br from-blue-50 to-indigo-50", 
+      text: "text-indigo-600",
+      border: "border-indigo-200",
+      shadow: "shadow-indigo-500/20"
+    }
   ];
 
   const getStatusConfig = (status) => {
@@ -183,27 +191,69 @@ const Assignment = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 p-4 md:p-6 lg:p-8">
-      <div className="container">
-        <AssignmentHeader
-          totalAssignments={totalAssignments} 
-          pendingAssignments={assignments.filter(a => a.status === "pending").length} 
-        />
+      <div className="container mx-auto">
+        <AssignmentHeader totalAssignments={totalAssignments} />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-8">
           {stats.map((stat, index) => (
-            <div key={index} className="group relative bg-white/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/50 hover:border-transparent hover:-translate-y-2">
-              <div className={`absolute inset-0 bg-gradient-to-r ${stat.color} opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-500`}></div>
-              <div className="relative flex items-center gap-4">
-                <div className={`w-14 h-14 ${stat.bg} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                  <stat.icon className={`w-7 h-7 ${stat.text}`} />
+            <div 
+              key={index} 
+              className="col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4 group relative bg-gradient-to-br from-white/90 to-indigo-50/50 backdrop-blur-xl rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 border border-indigo-100/50 hover:border-indigo-300 hover:-translate-y-2 hover:shadow-indigo-500/20"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-500"></div>
+              <div className="absolute -top-4 -right-4 w-32 h-32 bg-indigo-200/20 rounded-full blur-2xl"></div>
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-blue-200/20 rounded-full blur-2xl"></div>
+              
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30 group-hover:scale-110 transition-transform duration-300">
+                    <stat.icon className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 font-medium uppercase tracking-wider">{stat.label}</p>
+                    <div className="flex items-center gap-3">
+                      <p className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+                        {stat.value}
+                      </p>
+                      <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium flex items-center gap-1">
+                        <TrendingUp className="w-3 h-3" /> Active
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">{stat.label}</p>
-                  <p className="text-3xl font-bold text-gray-800">{stat.value}</p>
+                
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200/50">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-gray-600">
+                      {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    </span>
+                  </div>
+                  <div className="hidden md:flex items-center gap-1.5 px-4 py-2 bg-indigo-50 rounded-xl border border-indigo-200">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs font-medium text-indigo-700">Live</span>
+                  </div>
                 </div>
               </div>
-              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <ArrowUpRight className="w-4 h-4 text-gray-400" />
+
+              <div className="relative mt-6 pt-6 border-t border-gray-200/50 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                    <span className="text-xs text-gray-500">Pending: <span className="font-semibold text-gray-700">{assignments.filter(a => a.status === "pending").length}</span></span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-xs text-gray-500">Submitted: <span className="font-semibold text-gray-700">{assignments.filter(a => a.status === "submitted").length}</span></span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                    <span className="text-xs text-gray-500">Graded: <span className="font-semibold text-gray-700">{assignments.filter(a => a.status === "graded").length}</span></span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400">Last updated: Just now</span>
+                </div>
               </div>
             </div>
           ))}
