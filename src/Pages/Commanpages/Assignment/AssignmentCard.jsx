@@ -1,10 +1,33 @@
 import React, { useState } from "react";
-import { BookOpen, User, Award, Calendar, Lock, Paperclip, Eye, Upload, ArrowRight } from "lucide-react";
+import { BookOpen, User, Award, Calendar, Lock, Paperclip, Eye, Upload, ArrowRight, Clock } from "lucide-react";
 import { Link } from "react-router";
 
 const AssignmentCard = ({ assignment, statusConfig, priorityConfig, semesterBadgeColor, formatDate }) => {
   const [hovered, setHovered] = useState(false);
   const StatusIcon = statusConfig.icon;
+
+  const isDeadlinePassed = (deadline) => {
+    if (!deadline) return false;
+    const now = new Date();
+    const end = new Date(deadline);
+    return now > end;
+  };
+
+  const deadlinePassed = isDeadlinePassed(assignment.deadline);
+
+  const getTimeRemaining = (deadline) => {
+    if (!deadline) return null;
+    const now = new Date();
+    const end = new Date(deadline);
+    const diff = end - now;
+    if (diff < 0) return "Past deadline";
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    if (days > 0) return `${days}d ${hours}h remaining`;
+    return `${hours}h remaining`;
+  };
+
+  const timeRemaining = getTimeRemaining(assignment.deadline);
 
   return (
     <div
@@ -32,6 +55,16 @@ const AssignmentCard = ({ assignment, statusConfig, priorityConfig, semesterBadg
             {assignment.attachments > 0 && (
               <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 flex items-center gap-1">
                 <Paperclip className="w-3 h-3" /> {assignment.attachments}
+              </span>
+            )}
+            {timeRemaining && (
+              <span className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
+                deadlinePassed 
+                  ? "bg-rose-100 text-rose-700 border border-rose-200" 
+                  : "bg-emerald-100 text-emerald-700 border border-emerald-200"
+              }`}>
+                <Clock className="w-3 h-3" /> 
+                {deadlinePassed ? "⏰ Deadline Passed" : timeRemaining}
               </span>
             )}
           </div>
@@ -68,13 +101,24 @@ const AssignmentCard = ({ assignment, statusConfig, priorityConfig, semesterBadg
             View Details
             <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-300" />
           </Link>
-          <Link 
-            to={`/assignment/submit/${assignment.id}`} 
-            className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-sm font-medium hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2 whitespace-nowrap group/btn2"
-          >
-            <Upload className="w-4 h-4 group-hover/btn2:-translate-y-1 transition-transform duration-300" /> 
-            Submit Assignment
-          </Link>
+          
+          {deadlinePassed ? (
+            <div 
+              className="px-5 py-2.5 bg-gray-300 text-gray-500 rounded-xl text-sm font-medium flex items-center gap-2 whitespace-nowrap cursor-not-allowed"
+              title="Submission deadline has passed"
+            >
+              <Clock className="w-4 h-4" /> 
+              Submission Closed
+            </div>
+          ) : (
+            <Link 
+              to={`/assignment/submit/${assignment.id}`} 
+              className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-sm font-medium hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2 whitespace-nowrap group/btn2"
+            >
+              <Upload className="w-4 h-4 group-hover/btn2:-translate-y-1 transition-transform duration-300" /> 
+              Submit Assignment
+            </Link>
+          )}
         </div>
       </div>
     </div>
