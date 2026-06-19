@@ -18,6 +18,7 @@ import NoticeDetails from "../Pages/Commanpages/Notice/NoticeDetails";
 import Assignment from "../Pages/Commanpages/Assignment/Assignment";
 import Submitassignment from "../Pages/Commanpages/Assignment/Submitassignment";
 import Assignmentdetels from "../Pages/Commanpages/Assignment/Assignmentdetels";
+import Submissionassignment from "../Pages/Teacher/Assignment/Submissionassignment";
 
 export const router = createBrowserRouter([
   {
@@ -99,6 +100,10 @@ export const router = createBrowserRouter([
         path: "/dashboard/settings",
         Component: Seeting,
       },
+      {
+        path:"/dashboard/submission-assignment",
+        Component:Submissionassignment
+      }
     ],
   },
 ]);

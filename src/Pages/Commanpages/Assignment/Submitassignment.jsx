@@ -205,6 +205,7 @@ const Submitassignment = () => {
       const submissionData = {
         assignmentId: id,
         assignmentTitle: assignment.assignmentTitle,
+        assignmentdeadline:assignment.deadline,
         assignmentCreatorEmail: assignment.createdBy?.email || "Unknown",
         assignmentCreatorName: assignment.createdBy?.fullName || assignment.createdBy?.name || "Unknown",
         assignmentCreatorInstitution: assignment.createdBy?.institutionName || "Unknown",
