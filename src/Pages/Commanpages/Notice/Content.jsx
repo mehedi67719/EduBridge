@@ -249,7 +249,7 @@ const Content = ({ notices = [], currentPage, totalPages, onPageChange }) => {
                   e.stopPropagation();
                   handleViewDetails(item._id);
                 }}
-                className="group/btn px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-600 rounded-xl transition-all duration-300 flex items-center gap-2 hover:shadow-lg hover:shadow-indigo-500/30"
+                className="group/btn px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white rounded-xl transition-all duration-300 flex items-center gap-2 hover:shadow-lg hover:shadow-indigo-500/30"
               >
                 <span>Read More</span>
                 <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-300" />
