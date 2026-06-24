@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import Useauth from "../../../Hooks/Useauth";
-import { submissionassignment } from "../../../API/Assignment/Submissionassignment";
+import { submissionassignment, submitmarks } from "../../../API/Assignment/Submissionassignment";
 import Loading from "../../../Components/Loading";
 import ErrorComponent from "../../../Components/ErrorComponent";
 
@@ -14,6 +15,7 @@ const Submissionassignment = () => {
   const [submittedMarks, setSubmittedMarks] = useState({});
   const [imageView, setImageView] = useState(null);
   const [expandedNotes, setExpandedNotes] = useState({});
+  const [submitting, setSubmitting] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,12 +23,22 @@ const Submissionassignment = () => {
         setLoading(false);
         return;
       }
-
       try {
         setLoading(true);
         setError(null);
         const res = await submissionassignment(dbUser.email, dbUser.userType);
         setData(res.data || []);
+        
+        const existingMarks = {};
+        res.data?.forEach((assignment) => {
+          assignment.submissions?.forEach((submission) => {
+            if (submission.marks !== undefined && submission.marks !== null) {
+              existingMarks[submission._id] = submission.marks;
+            }
+          });
+        });
+        setSubmittedMarks(existingMarks);
+        
       } catch (err) {
         setError(err.message || "Failed to load submissions");
         console.error(err);
@@ -34,7 +46,6 @@ const Submissionassignment = () => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [dbUser]);
 
@@ -72,10 +83,7 @@ const Submissionassignment = () => {
   const handleMarkChange = (submissionId, value, maxMarks) => {
     if (value === "" || /^\d*\.?\d*$/.test(value)) {
       const numValue = parseFloat(value);
-      if (
-        value !== "" &&
-        (isNaN(numValue) || numValue < 0 || numValue > maxMarks)
-      ) {
+      if (value !== "" && (isNaN(numValue) || numValue < 0 || numValue > maxMarks)) {
         return;
       }
       setMarks((prev) => ({
@@ -85,47 +93,104 @@ const Submissionassignment = () => {
     }
   };
 
-  const handleSubmitMark = (submissionId, maxMarks) => {
+  const handleSubmitMark = async (submissionId, maxMarks) => {
     const markValue = marks[submissionId];
     if (!markValue || markValue === "") {
-      alert("Please enter a mark before submitting");
+      Swal.fire({
+        icon: "warning",
+        title: "Missing Mark",
+        text: "Please enter a mark before submitting",
+        confirmButtonColor: "#6366f1",
+        confirmButtonText: "OK",
+      });
       return;
     }
 
     const numericMark = parseFloat(markValue);
     if (isNaN(numericMark) || numericMark < 0) {
-      alert("Please enter a valid mark");
+      Swal.fire({
+        icon: "warning",
+        title: "Invalid Mark",
+        text: "Please enter a valid mark",
+        confirmButtonColor: "#6366f1",
+        confirmButtonText: "OK",
+      });
       return;
     }
 
     if (numericMark > maxMarks) {
-      alert(
-        `⚠️ Mark cannot be more than ${maxMarks}. Please enter a valid mark.`,
-      );
+      Swal.fire({
+        icon: "warning",
+        title: "Mark Exceeds Maximum",
+        text: `Mark cannot be more than ${maxMarks}. Please enter a valid mark.`,
+        confirmButtonColor: "#6366f1",
+        confirmButtonText: "OK",
+      });
       return;
     }
 
-    console.log(
-      `✅ Mark ${numericMark} submitted for submission ID: ${submissionId}`,
-    );
+    const confirmResult = await Swal.fire({
+      title: "Confirm Submission",
+      text: `Are you sure you want to submit ${numericMark} marks?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#10b981",
+      cancelButtonColor: "#ef4444",
+      confirmButtonText: "Yes, Submit",
+      cancelButtonText: "Cancel",
+    });
 
-    setSubmittedMarks((prev) => ({
-      ...prev,
-      [submissionId]: numericMark,
-    }));
+    if (!confirmResult.isConfirmed) {
+      return;
+    }
 
-    setMarks((prev) => ({
-      ...prev,
-      [submissionId]: "",
-    }));
+    setSubmitting((prev) => ({ ...prev, [submissionId]: true }));
 
-    alert(`✅ Mark ${numericMark} submitted successfully!`);
+    try {
+      const result = await submitmarks(submissionId, numericMark);
+
+      if (result.success) {
+        setSubmittedMarks((prev) => ({
+          ...prev,
+          [submissionId]: numericMark,
+        }));
+        setMarks((prev) => ({
+          ...prev,
+          [submissionId]: "",
+        }));
+
+        Swal.fire({
+          icon: "success",
+          title: "Mark Submitted!",
+          text: `Successfully submitted ${numericMark} marks.`,
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Submission Failed",
+          text: result.message || "Failed to submit mark. Please try again.",
+          confirmButtonColor: "#6366f1",
+          confirmButtonText: "OK",
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Submission Failed",
+        text: "Failed to submit mark. Please try again.",
+        confirmButtonColor: "#6366f1",
+        confirmButtonText: "OK",
+      });
+      console.error("Submit error:", error);
+    } finally {
+      setSubmitting((prev) => ({ ...prev, [submissionId]: false }));
+    }
   };
 
   const toggleExpand = (assignmentId) => {
-    setExpandedAssignment(
-      expandedAssignment === assignmentId ? null : assignmentId,
-    );
+    setExpandedAssignment(expandedAssignment === assignmentId ? null : assignmentId);
   };
 
   const toggleNoteExpand = (submissionId) => {
@@ -152,10 +217,7 @@ const Submissionassignment = () => {
   if (error) {
     return (
       <div className="bg-white rounded-2xl shadow-md p-8 border border-gray-100">
-        <ErrorComponent
-          error={error}
-          onRetry={() => window.location.reload()}
-        />
+        <ErrorComponent error={error} onRetry={() => window.location.reload()} />
       </div>
     );
   }
@@ -178,10 +240,7 @@ const Submissionassignment = () => {
             </span>
             <span className="bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 px-4 py-2 rounded-full text-xs font-medium shadow-sm">
               👥{" "}
-              {data?.reduce(
-                (acc, item) => acc + (item.submissions?.length || 0),
-                0,
-              ) || 0}{" "}
+              {data?.reduce((acc, item) => acc + (item.submissions?.length || 0), 0) || 0}{" "}
               Submissions
             </span>
           </div>
@@ -193,12 +252,9 @@ const Submissionassignment = () => {
       ) : data?.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-md p-16 text-center border border-gray-100">
           <div className="text-6xl mb-4">📭</div>
-          <h3 className="text-xl font-bold text-gray-700">
-            No Submissions Yet
-          </h3>
+          <h3 className="text-xl font-bold text-gray-700">No Submissions Yet</h3>
           <p className="text-gray-400 text-sm mt-2 max-w-md mx-auto">
-            When students submit assignments, they'll appear here for you to
-            review and grade.
+            When students submit assignments, they'll appear here for you to review and grade.
           </p>
         </div>
       ) : (
@@ -248,18 +304,10 @@ const Submissionassignment = () => {
                                   : "bg-emerald-50 text-emerald-600"
                               }`}
                             >
-                              <span
-                                className={
-                                  deadlinePassed
-                                    ? "text-rose-500"
-                                    : "text-emerald-500"
-                                }
-                              >
+                              <span className={deadlinePassed ? "text-rose-500" : "text-emerald-500"}>
                                 {deadlinePassed ? "⏰" : "⏳"}
                               </span>
-                              {deadlinePassed
-                                ? "Deadline Passed"
-                                : timeRemaining}
+                              {deadlinePassed ? "Deadline Passed" : timeRemaining}
                             </span>
                           </div>
                         </div>
@@ -267,25 +315,15 @@ const Submissionassignment = () => {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-gray-400 hidden sm:inline">
-                        {expandedAssignment === item.assignmentId
-                          ? "Collapse"
-                          : "Expand"}
+                        {expandedAssignment === item.assignmentId ? "Collapse" : "Expand"}
                       </span>
                       <div
-                        className={`text-indigo-400 transition-transform duration-300 ${expandedAssignment === item.assignmentId ? "rotate-180" : ""}`}
+                        className={`text-indigo-400 transition-transform duration-300 ${
+                          expandedAssignment === item.assignmentId ? "rotate-180" : ""
+                        }`}
                       >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                       </div>
                     </div>
@@ -297,17 +335,14 @@ const Submissionassignment = () => {
                     {item.submissions?.length === 0 ? (
                       <div className="text-center py-10 text-gray-400">
                         <div className="text-3xl mb-2">📭</div>
-                        <p className="text-sm">
-                          No submissions for this assignment yet.
-                        </p>
+                        <p className="text-sm">No submissions for this assignment yet.</p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {item.submissions?.map((submission) => {
-                          const isMarked = submittedMarks[submission._id];
-                          const isImage = submission.fileUrl?.match(
-                            /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i,
-                          );
+                          const existingMark = submittedMarks[submission._id] || submission.marks;
+                          const isMarked = existingMark !== undefined && existingMark !== null && existingMark > 0;
+                          const isImage = submission.fileUrl?.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i);
                           const isNoteExpanded = expandedNotes[submission._id];
                           const noteText = submission.notes || "";
 
@@ -324,8 +359,7 @@ const Submissionassignment = () => {
                                     </span>
                                     <span
                                       className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                                        submission.submitterUserType ===
-                                        "Student"
+                                        submission.submitterUserType === "Student"
                                           ? "bg-blue-100 text-blue-700"
                                           : "bg-purple-100 text-purple-700"
                                       }`}
@@ -334,7 +368,7 @@ const Submissionassignment = () => {
                                     </span>
                                     {isMarked && (
                                       <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium flex items-center gap-0.5">
-                                        ✅ {isMarked}/{totalMarks}
+                                        ✅ {existingMark}/{totalMarks}
                                       </span>
                                     )}
                                   </div>
@@ -344,18 +378,14 @@ const Submissionassignment = () => {
                                   </p>
                                 </div>
                                 <div className="flex flex-col items-end gap-0.5 flex-shrink-0 ml-2">
-                                  <p className="text-[10px] text-gray-400">
-                                    {submission.submitterEmail}
-                                  </p>
+                                  <p className="text-[10px] text-gray-400">{submission.submitterEmail}</p>
                                 </div>
                               </div>
 
                               {submission.fileUrl && isImage && (
                                 <div
                                   className="relative mb-2 rounded-lg overflow-hidden cursor-pointer group"
-                                  onClick={() =>
-                                    openImageView(submission.fileUrl)
-                                  }
+                                  onClick={() => openImageView(submission.fileUrl)}
                                 >
                                   <img
                                     src={submission.fileUrl}
@@ -378,30 +408,22 @@ const Submissionassignment = () => {
                                   className="flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-all mb-2"
                                 >
                                   <span>📄</span>
-                                  <span className="truncate">
-                                    {submission.fileName || "View File"}
-                                  </span>
+                                  <span className="truncate">{submission.fileName || "View File"}</span>
                                   <span>↗</span>
                                 </a>
                               )}
 
                               {submission.fileName && (
-                                <p className="text-[10px] text-gray-400 mb-2 truncate">
-                                  📎 {submission.fileName}
-                                </p>
+                                <p className="text-[10px] text-gray-400 mb-2 truncate">📎 {submission.fileName}</p>
                               )}
 
                               {submission.notes && (
                                 <div className="mb-2 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
                                   <div className="flex items-start gap-1.5">
-                                    <span className="text-yellow-600 text-sm">
-                                      💬
-                                    </span>
+                                    <span className="text-yellow-600 text-sm">💬</span>
                                     <div className="flex-1">
                                       <p className="text-xs text-gray-700 leading-relaxed">
-                                        {isNoteExpanded
-                                          ? noteText
-                                          : truncateText(noteText, 80)}
+                                        {isNoteExpanded ? noteText : truncateText(noteText, 80)}
                                       </p>
                                       {noteText.length > 80 && (
                                         <button
@@ -411,9 +433,7 @@ const Submissionassignment = () => {
                                           }}
                                           className="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium mt-1"
                                         >
-                                          {isNoteExpanded
-                                            ? "Show less"
-                                            : "Show more"}
+                                          {isNoteExpanded ? "Show less" : "Show more"}
                                         </button>
                                       )}
                                     </div>
@@ -430,11 +450,7 @@ const Submissionassignment = () => {
                                           type="text"
                                           value={marks[submission._id] || ""}
                                           onChange={(e) =>
-                                            handleMarkChange(
-                                              submission._id,
-                                              e.target.value,
-                                              totalMarks,
-                                            )
+                                            handleMarkChange(submission._id, e.target.value, totalMarks)
                                           }
                                           placeholder={`Enter marks (0-${totalMarks})`}
                                           className="w-full px-3 py-1.5 text-xs border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
@@ -444,42 +460,35 @@ const Submissionassignment = () => {
                                         </span>
                                       </div>
                                       <button
-                                        onClick={() =>
-                                          handleSubmitMark(
-                                            submission._id,
-                                            totalMarks,
-                                          )
-                                        }
-                                        disabled={
-                                          !marks[submission._id] ||
-                                          marks[submission._id] === ""
-                                        }
+                                        onClick={() => handleSubmitMark(submission._id, totalMarks)}
+                                        disabled={!marks[submission._id] || marks[submission._id] === "" || submitting[submission._id]}
                                         className={`px-4 py-1.5 rounded-lg font-medium text-white transition-all duration-300 flex items-center gap-1.5 whitespace-nowrap text-xs ${
-                                          !marks[submission._id] ||
-                                          marks[submission._id] === ""
+                                          !marks[submission._id] || marks[submission._id] === "" || submitting[submission._id]
                                             ? "bg-gray-300 cursor-not-allowed opacity-50"
                                             : "bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 shadow-sm hover:shadow"
                                         }`}
                                       >
-                                        <svg
-                                          className="w-3 h-3"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          viewBox="0 0 24 24"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                          />
-                                        </svg>
-                                        Submit
+                                        {submitting[submission._id] ? (
+                                          <>
+                                            <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Submitting...
+                                          </>
+                                        ) : (
+                                          <>
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            Submit
+                                          </>
+                                        )}
                                       </button>
                                     </>
                                   ) : (
-                                    <div className="w-full text-center text-xs text-emerald-600 font-medium py-1.5 bg-emerald-50 rounded-lg">
-                                      ✅ Marked: {isMarked}/{totalMarks}
+                                    <div className="w-full text-center text-xs text-emerald-600 font-medium py-2 bg-emerald-50 rounded-lg border border-emerald-200">
+                                      ✅ <span className="font-bold">{existingMark}</span>/{totalMarks} Marks Already Submitted
                                     </div>
                                   )}
                                 </div>
