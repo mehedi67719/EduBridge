@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router";
 import {
-  FileText,
   Eye,
   Trash2,
   Edit,
@@ -11,7 +10,6 @@ import {
   CheckCircle,
   AlertCircle,
   MoreVertical,
-  Download,
   Filter,
   Search,
   Plus,
@@ -295,7 +293,7 @@ const MyUploadedassignment = () => {
 
   return (
     <div>
-      {/* Header */}
+
       <div className="bg-white rounded-2xl shadow-md p-6 md:p-8 mb-6 border border-gray-100">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
@@ -315,7 +313,7 @@ const MyUploadedassignment = () => {
           </Link>
         </div>
 
-        {/* Stats */}
+     
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6 pt-6 border-t border-gray-100">
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-3 text-center">
             <p className="text-2xl font-bold text-indigo-600">{stats.total}</p>
@@ -336,7 +334,6 @@ const MyUploadedassignment = () => {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 mb-6 border border-gray-100">
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <div className="flex-1 relative">
@@ -364,7 +361,7 @@ const MyUploadedassignment = () => {
         </div>
       </div>
 
-      {/* Assignments List */}
+     
       {filteredAssignments.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-md p-16 text-center border border-gray-100">
           <div className="text-6xl mb-4">📭</div>
