@@ -6,8 +6,6 @@ import Results from "../Pages/Commanpages/Results";
 import Chat from "../Pages/Commanpages/Chat";
 import Login from "../Pages/Login";
 import Register from "../Pages/Register";
-import DashboardRoot from "./DashboardRoot";
-import DashboardHome from "../Pages/Dashboard/DashboardHome";
 import UploadRoutine from "../Pages/Teacher/UploadRoutine";
 import Profile from "../Pages/Commanpages/Profile";
 import Seeting from "../Pages/Commanpages/Seeting";
@@ -19,6 +17,9 @@ import Assignment from "../Pages/Commanpages/Assignment/Assignment";
 import Submitassignment from "../Pages/Commanpages/Assignment/Submitassignment";
 import Assignmentdetels from "../Pages/Commanpages/Assignment/Assignmentdetels";
 import Submissionassignment from "../Pages/Teacher/Assignment/Submissionassignment";
+import DashboardRoot from "./DashboardRoot";
+import DashboardHome from "./Dashboard/DashboardHome";
+import Mynotice from "../Pages/Commanpages/Notice/Mynotice";
 
 export const router = createBrowserRouter([
   {
@@ -85,6 +86,10 @@ export const router = createBrowserRouter([
         Component: UploadNotice,
       },
       {
+        path: "/dashboard/my-notice",
+        Component:Mynotice
+      },
+      {
         path: "/dashboard/upload-assignment",
         Component: UploadAssignment,
       },
@@ -101,9 +106,9 @@ export const router = createBrowserRouter([
         Component: Seeting,
       },
       {
-        path:"/dashboard/submission-assignment",
-        Component:Submissionassignment
-      }
+        path: "/dashboard/submission-assignment",
+        Component: Submissionassignment,
+      },
     ],
   },
 ]);

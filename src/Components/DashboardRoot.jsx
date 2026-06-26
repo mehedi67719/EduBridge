@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import Sidebar from "../Pages/Dashboard/Sidebar";
 import { Outlet } from "react-router";
 import { Menu } from "lucide-react";
+import Sidebar from "./Dashboard/Sidebar";
 
 const DashboardRoot = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

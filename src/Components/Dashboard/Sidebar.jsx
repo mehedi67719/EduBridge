@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+
 import {
   LayoutDashboard,
   UserCircle,
@@ -16,10 +16,11 @@ import {
   ChevronRight
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router";
-import Useauth from "../../Hooks/Useauth";
-import Loading from "../../Components/Loading";
-import Logo from "../../Components/Logo";
 import { MdOutlineAssignmentReturned } from "react-icons/md";
+import Loading from "../Loading";
+import Logo from "../Logo";
+import Useauth from "../../Hooks/Useauth";
+import { TbBellCheck } from "react-icons/tb";
 
 const Sidebar = ({ isOpen = true, device = "desktop", activeTab, setActiveTab, closeSidebar }) => {
   const { dbUser, loading } = Useauth();
@@ -29,10 +30,11 @@ const Sidebar = ({ isOpen = true, device = "desktop", activeTab, setActiveTab, c
   const mainMenuItems = [
     { id: "overview", icon: LayoutDashboard, label: "Overview", badge: null, path: "/dashboard" },
     { id: "uploadNotice", icon: Bell, label: "Upload Notice", badge: null, path: "/dashboard/upload-notice" },
+    { id: "myNotice", icon: TbBellCheck, label: "My Notice", badge: null, path: "/dashboard/my-notice" },
     { id: "uploadAssignment", icon: FileText, label: "Upload Assignment", badge: null, path: "/dashboard/upload-assignment" },
     { id: "uploadRoutine", icon: Calendar, label: "Upload Routine", badge: null, path: "/dashboard/upload-routine" },
     { id: "submissionassignment", icon: MdOutlineAssignmentReturned, label: "Submission Assignment", badge: null, path: "/dashboard/submission-assignment" },
-  
+    
   ];
 
   const accountMenuItems = [
@@ -97,7 +99,7 @@ const Sidebar = ({ isOpen = true, device = "desktop", activeTab, setActiveTab, c
                 <div className="absolute inset-0 bg-amber-400 rounded-full blur-lg opacity-50"></div>
                 <GraduationCap className="w-7 h-7 lg:w-9 lg:h-9 text-amber-400 relative z-10" />
               </div>
-              {showText && <Logo />}
+              {showText && <Logo/>}
             </div>
 
             {isMobile && (
