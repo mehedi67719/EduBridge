@@ -19,7 +19,9 @@ import Assignmentdetels from "../Pages/Commanpages/Assignment/Assignmentdetels";
 import Submissionassignment from "../Pages/Teacher/Assignment/Submissionassignment";
 import DashboardRoot from "./DashboardRoot";
 import DashboardHome from "./Dashboard/DashboardHome";
-import Mynotice from "../Pages/Commanpages/Notice/Mynotice";
+import Myuploadednotice from "../Pages/Commanpages/Notice/Myuploadednotice";
+import MyUploadedassignment from "../Pages/Teacher/Assignment/MyUploadedassignment";
+
 
 export const router = createBrowserRouter([
   {
@@ -86,12 +88,16 @@ export const router = createBrowserRouter([
         Component: UploadNotice,
       },
       {
-        path: "/dashboard/my-notice",
-        Component:Mynotice
+        path: "/dashboard/my-uploaded-notice",
+        Component:Myuploadednotice
       },
       {
         path: "/dashboard/upload-assignment",
         Component: UploadAssignment,
+      },
+      {
+        path:"/dashboard/my-uploaded-assignment",
+        Component:MyUploadedassignment
       },
       {
         path: "/dashboard/upload-routine",

@@ -16,7 +16,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router";
-import { MdOutlineAssignmentReturned } from "react-icons/md";
+import { MdAssignmentTurnedIn, MdOutlineAssignmentReturned } from "react-icons/md";
 import Loading from "../Loading";
 import Logo from "../Logo";
 import Useauth from "../../Hooks/Useauth";
@@ -30,10 +30,12 @@ const Sidebar = ({ isOpen = true, device = "desktop", activeTab, setActiveTab, c
   const mainMenuItems = [
     { id: "overview", icon: LayoutDashboard, label: "Overview", badge: null, path: "/dashboard" },
     { id: "uploadNotice", icon: Bell, label: "Upload Notice", badge: null, path: "/dashboard/upload-notice" },
-    { id: "myNotice", icon: TbBellCheck, label: "My Notice", badge: null, path: "/dashboard/my-notice" },
+    { id: "myuploadedNotice", icon: TbBellCheck, label: "My Uploaded Notice", badge: null, path: "/dashboard/my-uploaded-notice" },
     { id: "uploadAssignment", icon: FileText, label: "Upload Assignment", badge: null, path: "/dashboard/upload-assignment" },
-    { id: "uploadRoutine", icon: Calendar, label: "Upload Routine", badge: null, path: "/dashboard/upload-routine" },
+    { id: "myuploadedAssignment", icon: MdAssignmentTurnedIn, label: "My Uploaded Assignment", badge: null, path: "/dashboard/my-uploaded-assignment" },
     { id: "submissionassignment", icon: MdOutlineAssignmentReturned, label: "Submission Assignment", badge: null, path: "/dashboard/submission-assignment" },
+    { id: "uploadRoutine", icon: Calendar, label: "Upload Routine", badge: null, path: "/dashboard/upload-routine" },
+    
     
   ];
 
