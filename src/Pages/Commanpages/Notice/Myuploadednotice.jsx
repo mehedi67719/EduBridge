@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router";
+import Swal from "sweetalert2";
 import {
   FileText,
   Eye,
@@ -11,10 +12,8 @@ import {
   CheckCircle,
   AlertCircle,
   MoreVertical,
-  Filter,
   Search,
   Plus,
-  X,
   Mail,
   Building2,
   User,
@@ -26,6 +25,7 @@ import Loading from "../../../Components/Loading";
 import ErrorComponent from "../../../Components/ErrorComponent";
 import Useauth from "../../../Hooks/Useauth";
 import { myUploadedNotice } from "../../../API/Notice/myuploadednotice";
+import { deleteNotice } from "../../../API/Notice/deletenotice";
 
 const Myuploadednotice = () => {
   const { dbUser, loading: authLoading } = Useauth();
@@ -33,8 +33,6 @@ const Myuploadednotice = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedNotice, setSelectedNotice] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [imageView, setImageView] = useState(null);
 
   useEffect(() => {
@@ -142,15 +140,51 @@ const Myuploadednotice = () => {
     return matchesSearch;
   });
 
-  const handleDelete = (notice) => {
-    setSelectedNotice(notice);
-    setShowDeleteModal(true);
-  };
+  const handleDelete = async (noticeId, noticeTitle) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      html: `You are about to delete the notice: <br /> <strong>"${noticeTitle}"</strong>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+    });
 
-  const confirmDelete = () => {
-    setNotices(notices.filter(n => n._id !== selectedNotice._id));
-    setShowDeleteModal(false);
-    setSelectedNotice(null);
+    if (result.isConfirmed) {
+      try {
+        const response = await deleteNotice(noticeId);
+        
+        if (response.success) {
+          setNotices(notices.filter(n => n._id !== noticeId));
+          
+          Swal.fire({
+            title: 'Deleted!',
+            text: 'Notice has been deleted successfully.',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        } else {
+          Swal.fire({
+            title: 'Error!',
+            text: response.message || 'Failed to delete notice.',
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+          });
+        }
+      } catch (error) {
+        console.error("Delete error:", error);
+        Swal.fire({
+          title: 'Error!',
+          text: error.message || 'Something went wrong. Please try again.',
+          icon: 'error',
+          confirmButtonColor: '#3085d6',
+        });
+      }
+    }
   };
 
   const openImageView = (imageUrl) => {
@@ -354,7 +388,7 @@ const Myuploadednotice = () => {
 
                   <div className="flex items-center gap-1 ml-4 flex-shrink-0">
                     <Link
-                      to={`/notice/${notice._id}`}
+                      to={`/notice/details/${notice._id}`}
                       className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
                       title="View"
                     >
@@ -368,7 +402,7 @@ const Myuploadednotice = () => {
                       <Edit size={18} />
                     </Link>
                     <button
-                      onClick={() => handleDelete(notice)}
+                      onClick={() => handleDelete(notice._id, notice.noticeTitle)}
                       className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
                       title="Delete"
                     >
@@ -385,52 +419,6 @@ const Myuploadednotice = () => {
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {showDeleteModal && selectedNotice && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Delete Notice</h3>
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X size={20} className="text-gray-500" />
-              </button>
-            </div>
-            <div className="flex items-start gap-3 mb-6">
-              <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <AlertCircle size={20} className="text-rose-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-700">
-                  Are you sure you want to delete the notice:
-                </p>
-                <p className="text-sm font-semibold text-gray-900 mt-1">
-                  "{selectedNotice.noticeTitle}"
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  This action cannot be undone.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-xl text-sm font-medium hover:shadow-lg hover:scale-105 transition-all duration-300"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
